@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>星月之约 | 永恒浪漫</title>
+    <style>
+        /* 优化后的CSS */
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #ff96f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Microsoft YaHei', system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            min-height: 100vh;
+            background: url('你的背景图URL') center/cover no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                rgba(94, 43, 133, 0.4), 
+                rgba(255, 97, 150, 0.3));
+            backdrop-filter: blur(4px);
+            animation: gradientShift 12s alternate infinite;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+            text-align: center;
+            padding: 2rem;
+            max-width: 90%;
+        }
+
+        h1 {
+            font-size: clamp(2.8rem, 8vw, 4.2rem);
+            margin-bottom: 1.8rem;
+            background: linear-gradient(45deg, 
+                var(--primary-color), 
+                var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: titleFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 12px rgba(255, 107, 107, 0.4));
+        }
+
+        .message {
+            font-size: clamp(1.1rem, 3vw, 1.25rem);
+            line-height: 1.8;
+            margin: 2.5rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: messageAppear 1s 0.8s forwards;
+        }
+
+        .message p {
+            margin: 1.5rem 0;
+            opacity: 0;
+            transform: translateX(-30px);
+            animation: textFlow 0.8s forwards;
+        }
+
+        .love-btn {
+            padding: 1.2rem 3rem;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            background: linear-gradient(135deg, 
+                var(--primary-color), 
+                var(--secondary-color));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: btnAppear 1s 2s forwards;
+            filter: drop-shadow(0 4px 15px rgba(255, 107, 107, 0.3));
+        }
+
+        .love-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent, 
+                rgba(255,255,255,0.15), 
+                transparent);
+            transform: rotate(45deg);
+            animation: btnShine 3s infinite;
+        }
+
+        .sakura {
+            position: fixed;
+            pointer-events: none;
+            animation: fall linear infinite;
+            user-select: none;
+            z-index: 1;
+        }
+
+        #fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+
+        @keyframes messageAppear { to { opacity: 1; transform: translateY(0); } }
+        @keyframes textFlow { to { opacity: 1; transform: translateX(0); } }
+        @keyframes btnAppear { to { opacity: 1; } }
+        @keyframes btnShine { to { transform: translateX(150%) rotate(45deg); } }
+        @keyframes fall { to { transform: translateY(120vh) rotate(720deg); } }
+        @keyframes gradientShift { 
+            0% { background-position: 0% 50%; } 
+            100% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworks"></canvas>
+    <audio id="bgm" loop>
+        <source src="https://raw.githubusercontent.com/I-Love-You-521/111/main/obj_wo3DlMOGwrbDjj7DisKw_14096513378_e486_dda7_9d14_6477749cd702c0b9d0debadb75ced6dd.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <div class="overlay"></div>
+        <div class="content">
+            <h1>🌙 星月为证 此情不渝 🌟</h1>
+            <div class="message">
+                <p>送给周雪云小朋友</p>
+                <p>在时间的长河里</p>
+                <p>你是唯一让我驻足的光</p>
+                <p>星河倾泻不及你眸中温柔</p>
+                <p>岁月流转不改此心永恒</p>
+                <p>愿以余生为笺</p>
+                <p>书写我们的星辰诗篇</p>
+                <p>爱我一生好不好</p>
+            </div>
+            <button class="love-btn">💖 我答应你 💖</button>
+        </div>
+    </div>
+
+    <script>
+        // 音频智能控制
+        const bgm = document.getElementById('bgm');
+        let audioEnabled = false;
+
+        const initAudio = () => {
+            bgm.volume = 0.4;
+            bgm.addEventListener('timeupdate', () => {
+                if(bgm.currentTime >= 194) bgm.currentTime = 14;
+            });
+            
+            document.addEventListener('click', () => {
+                if(!audioEnabled) {
+                    bgm.play().then(() => {
+                        audioEnabled = true;
+                        bgm.currentTime = 14;
+                    }).catch(() => {
+                        document.querySelector('.love-btn').addEventListener('click', () => {
+                            bgm.play();
+                        }, { once: true });
+                    });
+                }
+            }, { once: true });
+        };
+
+        // 优化樱花系统
+        class SakuraSystem {
+            constructor() {
+                this.pool = [];
+                setInterval(this.createSakura.bind(this), 800);
+            }
+
+            createSakura() {
+                const sakura = this.pool.find(n => !n.inUse) || this.createNewSakura();
+                sakura.inUse = true;
+                sakura.style.left = `${Math.random() * 100}vw`;
+                sakura.style.fontSize = `${Math.random() * 12 + 10}px`;
+                sakura.style.animationDuration = `${Math.random() * 3 + 6}s`;
+                sakura.style.opacity = Math.random() * 0.4 + 0.6;
+                
+                setTimeout(() => {
+                    sakura.inUse = false;
+                    sakura.style.opacity = 0;
+                }, 8000);
+            }
+
+            createNewSakura() {
+                const s = document.createElement('div');
+                s.className = 'sakura';
+                s.innerHTML = ['🌸', '💮', '🎴'][Math.floor(Math.random()*3)];
+                document.body.appendChild(s);
+                this.pool.push(s);
+                return s;
+            }
+        }
+
+        // 烟花粒子系统
+        class FireworkSystem {
+            constructor() {
+                this.canvas = document.getElementById('fireworks');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                this.particles = [];
+                window.addEventListener('resize', this.resize.bind(this));
+                this.animate();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            create(x, y) {
+                for(let i=0; i<80; i++) {
+                    this.particles.push(new Particle(x, y, this.ctx));
+                }
+            }
+
+            animate() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.particles = this.particles.filter(p => {
+                    p.update();
+                    p.draw();
+                    return p.alpha > 0;
+                });
+                
+                requestAnimationFrame(this.animate.bind(this));
+            }
+        }
+
+        class Particle {
+            constructor(x, y, ctx) {
+                this.ctx = ctx;
+                this.x = x;
+                this.y = y;
+                this.alpha = 1;
+                this.color = `hsl(${Math.random()*360}, 70%, 60%)`;
+                this.velocity = {
+                    x: (Math.random()-0.5)*8,
+                    y: (Math.random()-2.2)*4
+                };
+            }
+
+            draw() {
+                this.ctx.fillStyle = this.color;
+                this.ctx.globalAlpha = this.alpha;
+                this.ctx.beginPath();
+                this.ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2);
+                this.ctx.fill();
+            }
+
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.015;
+            }
+        }
+
+        // 初始化系统
+        const init = () => {
+            initAudio();
+            new SakuraSystem();
+            const fireworks = new FireworkSystem();
+            
+            document.querySelector('.love-btn').addEventListener('click', function(e) {
+                fireworks.create(e.clientX, e.clientY);
+                anime({
+                    targets: '.message p',
+                    translateY: [-15, 0],
+                    opacity: [0, 1],
+                    delay: anime.stagger(120),
+                    duration: 800,
+                    easing: 'easeOutElastic'
+                });
+                
+                this.classList.add('active');
+                setTimeout(() => this.classList.remove('active'), 500);
+            });
+        };
+
+        // 加载动画库
+        const loadAnime = () => {
+            return new Promise((resolve) => {
+                if(window.anime) return resolve();
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js';
+                script.onload = resolve;
+                document.head.appendChild(script);
+            });
+        };
+
+        // 启动
+        loadAnime().then(init);
+    </script>
+</body>
+</html>
