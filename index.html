@@ -1,332 +1,563 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>星月之约 | 永恒浪漫</title>
-    <style>
-        /* 优化后的CSS */
-        :root {
-            --primary-color: #ff6b6b;
-            --secondary-color: #ff96f9;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>赌博模拟器 - 最终的深渊</title>
+<style>
+    :root {
+        --gold-color: #ffc107; --dark-bg: #121212; --primary-bg: #1e1e1e;
+        --secondary-bg: #2c2c2c; --text-color: #e0e0e0; --danger-color: #dc3545;
+        --success-color: #28a745; --warning-color: #ff9800; --loan-color: #0dcaf0;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&display=swap');
+    
+    body {
+        font-family: 'Noto Sans SC', sans-serif; background-color: var(--dark-bg);
+        color: var(--text-color); margin: 0; overflow: hidden;
+        background: url('https://images.unsplash.com/photo-1519638399535-1b039606e927?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+        position: relative; height: 100vh;
+    }
+    body::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1;
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: manipulation;
-        }
+    .container {
+        display: flex; width: 100%; height: 100%; z-index: 2; position: relative;
+    }
 
-        html, body {
-            height: 100%;
-            font-family: 'Microsoft YaHei', system-ui, sans-serif;
-            overflow: hidden;
-        }
+    .sidebar {
+        width: 340px; background-color: rgba(28, 28, 28, 0.9);
+        padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        display: flex; flex-direction: column; border-right: 1px solid var(--gold-color);
+        overflow-y: auto;
+    }
+    .assets h2, .message-board h3 {
+        color: var(--gold-color); border-bottom: 2px solid var(--gold-color);
+        padding-bottom: 10px; margin-top: 0; font-weight: 700;
+    }
+    .asset-item {
+        background-color: var(--secondary-bg); margin: 12px 0; padding: 15px;
+        border-radius: 8px; display: flex; justify-content: space-between;
+        align-items: center; transition: all 0.3s ease; border-left: 5px solid var(--gold-color);
+    }
+    .asset-item.sold-out, .asset-item.left { border-left-color: var(--danger-color); background-color: #444;}
+    .asset-item.in-loan { border-left-color: var(--loan-color); }
+    .asset-item span:first-child { font-weight: bold; }
+    .asset-item .value { color: var(--success-color); font-weight: bold; }
+    .asset-item .sold, .asset-item .left-text { color: var(--danger-color); font-weight: bold; }
+    .asset-item .loan-text { color: var(--loan-color); font-weight: bold; }
+    .asset-item .actions button {
+        background-color: var(--danger-color); color: white; border: none; padding: 5px 8px;
+        border-radius: 5px; cursor: pointer; font-size: 11px; margin-left: 5px;
+    }
+    .asset-item .actions button.loan-btn { background-color: var(--loan-color); }
+    .asset-item .actions button:disabled { background-color: #6c757d; cursor: not-allowed; }
 
-        .container {
-            min-height: 100vh;
-            background: url('你的背景图URL') center/cover no-repeat;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
+    .message-board {
+        margin-top: 20px; background-color: rgba(0,0,0,0.4); padding: 15px;
+        border-radius: 8px; flex-shrink: 0; height: 300px; overflow-y: auto;
+    }
+    #messages { list-style-type: none; padding: 0; margin: 0; font-size: 14px; }
+    #messages li { margin-bottom: 10px; line-height: 1.5; color: #ccc; border-bottom: 1px solid #333; padding-bottom: 8px;}
+    #messages li.warning { color: var(--warning-color); } #messages li.danger { color: var(--danger-color); }
+    #messages li.success { color: var(--success-color); } #messages li.info { color: var(--loan-color); }
 
-        .overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, 
-                rgba(94, 43, 133, 0.4), 
-                rgba(255, 97, 150, 0.3));
-            backdrop-filter: blur(4px);
-            animation: gradientShift 12s alternate infinite;
-        }
+    .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow: hidden; }
+    .game-nav { display: flex; margin-bottom: 20px; background-color: rgba(0,0,0,0.5); border-radius: 10px; padding: 5px; }
+    .game-nav button { flex: 1; padding: 15px 5px; font-size: 16px; font-weight: bold; background: transparent; color: #aaa; border: none; cursor: pointer; transition: all 0.3s ease; border-bottom: 3px solid transparent; }
+    .game-nav button.active { color: var(--gold-color); border-bottom-color: var(--gold-color); }
 
-        .content {
-            position: relative;
-            z-index: 2;
-            color: #fff;
-            text-align: center;
-            padding: 2rem;
-            max-width: 90%;
-        }
+    .game-view { display: none; background-color: rgba(44, 44, 44, 0.85); padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; flex-grow: 1; overflow-y: auto; }
+    .game-view.active { display: flex; flex-direction: column; }
+    .game-view h1 { color: var(--gold-color); margin-top: 0; font-size: 2em; }
 
-        h1 {
-            font-size: clamp(2.8rem, 8vw, 4.2rem);
-            margin-bottom: 1.8rem;
-            background: linear-gradient(45deg, 
-                var(--primary-color), 
-                var(--secondary-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: titleFloat 3s ease-in-out infinite;
-            filter: drop-shadow(0 0 12px rgba(255, 107, 107, 0.4));
-        }
+    /* Blackjack Styles */
+    #blackjack-game .table { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-around; }
+    .hand-area { min-height: 100px; }
+    .cards { display: flex; justify-content: center; flex-wrap: wrap; }
+    .card {
+        background-color: white; color: black; width: 60px; height: 90px;
+        border-radius: 5px; border: 1px solid #888; margin: 5px;
+        display: inline-flex; justify-content: center; align-items: center;
+        font-size: 24px; font-weight: bold; position: relative;
+        transform-style: preserve-3d; transition: transform 0.6s;
+    }
+    .card .suit { position: absolute; font-size: 12px; }
+    .card .suit-top { top: 5px; left: 5px; }
+    .card .suit-bottom { bottom: 5px; right: 5px; transform: rotate(180deg); }
+    .card.red { color: #f00; }
+    .card.back { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card.flipped { transform: rotateY(180deg); }
+    .hand-value { font-size: 1.2em; font-weight: bold; margin-top: 10px; }
 
-        .message {
-            font-size: clamp(1.1rem, 3vw, 1.25rem);
-            line-height: 1.8;
-            margin: 2.5rem 0;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: messageAppear 1s 0.8s forwards;
-        }
+    .controls { margin-top: 20px; }
+    .controls input { width: 120px; padding: 10px; border-radius: 5px; border: 2px solid #555; background-color: #333; color: white; font-size: 16px; text-align: center; }
+    .controls button {
+        padding: 10px 20px; font-size: 16px; font-weight: bold;
+        background: linear-gradient(45deg, var(--gold-color), var(--warning-color));
+        color: #111; border: none; border-radius: 5px; cursor: pointer;
+        transition: all 0.3s ease; margin: 0 5px;
+    }
+    .controls button:disabled { background: #555; color: #888; cursor: not-allowed; }
 
-        .message p {
-            margin: 1.5rem 0;
-            opacity: 0;
-            transform: translateX(-30px);
-            animation: textFlow 0.8s forwards;
-        }
+    #final-message {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.97); color: white; flex-direction: column;
+        justify-content: center; align-items: center; text-align: center; z-index: 1000;
+        padding: 20px; box-sizing: border-box;
+    }
+    #final-message h1 { color: var(--danger-color); font-size: 3em; }
+    #final-message p { font-size: 1.2em; max-width: 90%; margin: 20px 0; }
+    #restart-button { padding: 15px 40px; font-size: 1.2em; background-color: var(--gold-color); color: #111; border: none; border-radius: 5px; cursor: pointer; }
 
-        .love-btn {
-            padding: 1.2rem 3rem;
-            font-size: clamp(1.2rem, 4vw, 1.5rem);
-            background: linear-gradient(135deg, 
-                var(--primary-color), 
-                var(--secondary-color));
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            opacity: 0;
-            animation: btnAppear 1s 2s forwards;
-            filter: drop-shadow(0 4px 15px rgba(255, 107, 107, 0.3));
-        }
+    /* Responsive Design for Mobile */
+    @media (max-width: 768px) {
+        .container { flex-direction: column; }
+        .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; justify-content: space-around; border-right: none; border-bottom: 1px solid var(--gold-color); box-sizing: border-box; }
+        .assets, .message-board { width: 100%; box-sizing: border-box; }
+        .message-board { margin-top: 10px; height: 150px; }
+        .asset-item { flex-direction: column; align-items: center; text-align: center; padding: 10px; }
+        .asset-item span:first-child { margin-bottom: 5px; }
+        .asset-item .actions { margin-top: 5px; }
+        .main-content { padding: 10px; }
+        .game-nav button { font-size: 14px; padding: 10px 2px; }
+        .game-view h1 { font-size: 1.5em; }
+        .controls input { width: 100px; }
+        .controls button { padding: 10px 15px; font-size: 14px; }
+        .card { width: 45px; height: 70px; font-size: 18px; }
+        #final-message h1 { font-size: 2.5em; }
+        #final-message p { font-size: 1em; }
+    }
 
-        .love-btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, 
-                transparent, 
-                rgba(255,255,255,0.15), 
-                transparent);
-            transform: rotate(45deg);
-            animation: btnShine 3s infinite;
-        }
-
-        .sakura {
-            position: fixed;
-            pointer-events: none;
-            animation: fall linear infinite;
-            user-select: none;
-            z-index: 1;
-        }
-
-        #fireworks {
-            position: fixed;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        @keyframes titleFloat {
-            0%, 100% { transform: translateY(0) rotate(-1deg); }
-            50% { transform: translateY(-8px) rotate(1deg); }
-        }
-
-        @keyframes messageAppear { to { opacity: 1; transform: translateY(0); } }
-        @keyframes textFlow { to { opacity: 1; transform: translateX(0); } }
-        @keyframes btnAppear { to { opacity: 1; } }
-        @keyframes btnShine { to { transform: translateX(150%) rotate(45deg); } }
-        @keyframes fall { to { transform: translateY(120vh) rotate(720deg); } }
-        @keyframes gradientShift { 
-            0% { background-position: 0% 50%; } 
-            100% { background-position: 100% 50%; }
-        }
-    </style>
+</style>
 </head>
 <body>
-    <canvas id="fireworks"></canvas>
-    <audio id="bgm" loop>
-        <source src="https://raw.githubusercontent.com/I-Love-You-521/111/main/obj_wo3DlMOGwrbDjj7DisKw_14096513378_e486_dda7_9d14_6477749cd702c0b9d0debadb75ced6dd.mp3" type="audio/mpeg">
-    </audio>
 
-    <div class="container">
-        <div class="overlay"></div>
-        <div class="content">
-            <h1>🌙 星月为证 此情不渝 🌟</h1>
-            <div class="message">
-                <p>送给周雪云小朋友</p>
-                <p>在时间的长河里</p>
-                <p>你是唯一让我驻足的光</p>
-                <p>星河倾泻不及你眸中温柔</p>
-                <p>岁月流转不改此心永恒</p>
-                <p>愿以余生为笺，书写我们的星辰诗篇</p>
-                <p>爱我一生好不好</p>
+<!-- Audio Files -->
+<audio id="sound-bet" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+<audio id="sound-win" src="https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3" preload="auto"></audio>
+<audio id="sound-lose" src="https://www.soundjay.com/misc/sounds/remove-file-1.mp3" preload="auto"></audio>
+<audio id="sound-card" src="https://www.soundjay.com/misc/sounds/page-flip-02.mp3" preload="auto"></audio>
+<audio id="sound-family-leave" src="https://www.soundjay.com/human/sounds/woman-scream-01.mp3" preload="auto"></audio>
+
+<div class="container">
+    <div class="sidebar">
+        <div class="assets">
+            <h2>我的资产</h2>
+            <div id="cash-item" class="asset-item"><span>存款</span><span id="cash" class="value">500000</span></div>
+            <div id="house-item" class="asset-item">
+                <span>房子 (150万)</span>
+                <div class="actions">
+                    <button id="mortgage-house" class="loan-btn">抵押 (贷90万)</button>
+                    <button id="sell-house">变卖</button>
+                </div>
             </div>
-            <button class="love-btn">💖 我答应你 💖</button>
+            <div id="car-item" class="asset-item">
+                <span>车子 (30万)</span>
+                <div class="actions">
+                    <button id="mortgage-car" class="loan-btn">抵押 (贷15万)</button>
+                    <button id="sell-car">变卖</button>
+                </div>
+            </div>
+            <div id="wife-item" class="asset-item"><span>妻子</span><span id="wife-status" class="value">陪伴</span></div>
+            <div id="daughter-item" class="asset-item"><span>女儿</span><span id="daughter-status" class="value">陪伴</span></div>
+        </div>
+        <div class="message-board">
+            <h3>劝诫板</h3>
+            <ul id="messages"></ul>
         </div>
     </div>
 
-    <script>
-        // 音频智能控制
-        const bgm = document.getElementById('bgm');
-        let audioEnabled = false;
+    <div class="main-content">
+        <div class="game-nav">
+            <button class="game-tab active" onclick="switchGame('blackjack')">决战21点</button>
+            <button class="game-tab" onclick="switchGame('slots')">深渊老虎机</button>
+            <button class="game-tab" onclick="switchGame('crash')">疯狂Crash</button>
+        </div>
 
-        const initAudio = () => {
-            bgm.volume = 0.4;
-            bgm.addEventListener('timeupdate', () => {
-                if(bgm.currentTime >= 194) bgm.currentTime = 14;
-            });
-            
-            document.addEventListener('click', () => {
-                if(!audioEnabled) {
-                    bgm.play().then(() => {
-                        audioEnabled = true;
-                        bgm.currentTime = 14;
-                    }).catch(() => {
-                        document.querySelector('.love-btn').addEventListener('click', () => {
-                            bgm.play();
-                        }, { once: true });
-                    });
-                }
-            }, { once: true });
-        };
+        <!-- Blackjack Game -->
+        <div id="blackjack-game" class="game-view active">
+            <h1>幻觉的掌控</h1>
+            <div class="table">
+                <div>
+                    <h3>庄家 (<span id="dealer-score">0</span>)</h3>
+                    <div class="cards" id="dealer-cards"></div>
+                </div>
+                <div>
+                    <h3>你 (<span id="player-score">0</span>)</h3>
+                    <div class="cards" id="player-cards"></div>
+                </div>
+            </div>
+            <div class="controls" id="blackjack-controls">
+                <input type="number" id="blackjack-bet" value="1000" min="100" step="100">
+                <button id="blackjack-deal">发牌</button>
+                <button id="blackjack-hit" disabled>要牌</button>
+                <button id="blackjack-stand" disabled>停牌</button>
+            </div>
+        </div>
+        
+        <!-- Slots Game (Simplified for brevity, full code in previous versions) -->
+        <div id="slots-game" class="game-view" style="justify-content:center;">...</div>
+        <!-- Crash Game (Simplified for brevity, full code in previous versions) -->
+        <div id="crash-game" class="game-view" style="justify-content:center;">...</div>
 
-        // 优化樱花系统
-        class SakuraSystem {
-            constructor() {
-                this.pool = [];
-                setInterval(this.createSakura.bind(this), 800);
-            }
+    </div>
+</div>
 
-            createSakura() {
-                const sakura = this.pool.find(n => !n.inUse) || this.createNewSakura();
-                sakura.inUse = true;
-                sakura.style.left = `${Math.random() * 100}vw`;
-                sakura.style.fontSize = `${Math.random() * 12 + 10}px`;
-                sakura.style.animationDuration = `${Math.random() * 3 + 6}s`;
-                sakura.style.opacity = Math.random() * 0.4 + 0.6;
-                
-                setTimeout(() => {
-                    sakura.inUse = false;
-                    sakura.style.opacity = 0;
-                }, 8000);
-            }
+<div id="final-message">
+    <h1>万劫不复</h1>
+    <p>债务缠身，家破人亡。你曾拥有的一切都化为泡影。赌博这条路，没有赢家，终点永远是毁灭。这只是一个模拟器，但请永远记住这份窒息的感觉。</p>
+    <p><strong>警钟长鸣，远离赌博。</strong></p>
+    <button id="restart-button">重新开始</button>
+</div>
 
-            createNewSakura() {
-                const s = document.createElement('div');
-                s.className = 'sakura';
-                s.innerHTML = ['🌸', '💮', '🎴'][Math.floor(Math.random()*3)];
-                document.body.appendChild(s);
-                this.pool.push(s);
-                return s;
-            }
+<script>
+// --- State Management ---
+let state = {
+    cash: 500000,
+    house: { value: 1500000, sold: false, loan: 0, loanAmount: 900000 },
+    car: { value: 300000, sold: false, loan: 0, loanAmount: 150000 },
+    family: { wife: '陪伴', daughter: '陪伴', arguments: 0 },
+    dailyExpenseInterval: null,
+};
+// Game states
+let blackjack = { deck: [], playerHand: [], dealerHand: [], bet: 0, inProgress: false };
+
+// --- DOM & Sound Elements ---
+const cashEl = document.getElementById('cash');
+const messagesEl = document.getElementById('messages');
+const sounds = {
+    bet: document.getElementById('sound-bet'),
+    win: document.getElementById('sound-win'),
+    lose: document.getElementById('sound-lose'),
+    card: document.getElementById('sound-card'),
+    familyLeave: document.getElementById('sound-family-leave')
+};
+function playSound(sound) { sounds[sound]?.play(); }
+
+// --- Utility Functions ---
+function switchGame(gameId) {
+    document.querySelectorAll('.game-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`${gameId}-game`).classList.add('active');
+    document.querySelector(`.game-tab[onclick="switchGame('${gameId}')"]`).classList.add('active');
+}
+function addMessage(text, type = '') {
+    const li = document.createElement('li');
+    li.innerHTML = text; // Use innerHTML to allow bold tags
+    if (type) li.classList.add(type);
+    messagesEl.prepend(li);
+    if (messagesEl.children.length > 20) messagesEl.removeChild(messagesEl.lastChild);
+}
+
+// --- Asset & Consequence Logic ---
+function updateAssets() {
+    cashEl.textContent = state.cash.toLocaleString();
+    const updateItem = (item, itemName, itemState) => {
+        const itemEl = document.getElementById(`${itemName}-item`);
+        const actionsEl = itemEl.querySelector('.actions');
+        if (itemState.sold) {
+            itemEl.className = 'asset-item sold-out';
+            actionsEl.innerHTML = `<span class="sold">已变卖</span>`;
+        } else if (itemState.loan > 0) {
+            itemEl.className = 'asset-item in-loan';
+            actionsEl.innerHTML = `<span class="loan-text">已抵押 (欠${itemState.loan.toLocaleString()})</span>`;
         }
+    };
+    updateItem(state.house, 'house', state.house);
+    updateItem(state.car, 'car', state.car);
 
-        // 烟花粒子系统
-        class FireworkSystem {
-            constructor() {
-                this.canvas = document.getElementById('fireworks');
-                this.ctx = this.canvas.getContext('2d');
-                this.resize();
-                this.particles = [];
-                window.addEventListener('resize', this.resize.bind(this));
-                this.animate();
-            }
+    document.getElementById('wife-status').textContent = state.family.wife;
+    document.getElementById('daughter-status').textContent = state.family.daughter;
+    const wifeItem = document.getElementById('wife-item');
+    if(state.family.wife !== '陪伴') wifeItem.classList.add('left');
+    else wifeItem.classList.remove('left');
 
-            resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            }
+    checkConsequences();
+}
 
-            create(x, y) {
-                for(let i=0; i<80; i++) {
-                    this.particles.push(new Particle(x, y, this.ctx));
-                }
-            }
+function checkConsequences() {
+    const totalAssets = state.cash + (state.house.sold ? 0 : state.house.value) + (state.car.sold ? 0 : state.car.value);
+    
+    // Family status checks
+    if (state.family.wife === '陪伴' && state.car.loan > 0 && state.family.arguments === 0) {
+        state.family.arguments++;
+        addMessage('你抵押了车子，妻子和你大吵一架，说日子没法过了。', 'warning');
+    }
+    if (state.family.wife === '陪伴' && state.house.loan > 0 && state.family.arguments === 1) {
+        state.family.arguments++;
+        state.family.wife = '失望';
+        addMessage('你把房子也抵押了！妻子对你彻底失望，整日以泪洗面。', 'danger');
+    }
+    if (state.family.wife !== '已离开' && totalAssets < 200000) {
+        playSound('familyLeave');
+        state.family.wife = '已离开';
+        state.family.daughter = '已离开';
+        addMessage('<b>家破人亡</b>：你的资产已无法支撑一个家。妻子带着女儿，永远地离开了这个被你毁掉的港湾。', 'danger');
+    }
 
-            animate() {
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                this.particles = this.particles.filter(p => {
-                    p.update();
-                    p.draw();
-                    return p.alpha > 0;
-                });
-                
-                requestAnimationFrame(this.animate.bind(this));
-            }
+    if (state.cash <= 0 && state.car.sold && state.house.sold) {
+        endGame();
+    }
+}
+
+function applyLifeCost() {
+    const cost = 5000;
+    if (state.cash >= cost) {
+        state.cash -= cost;
+        addMessage(`日常开销，存款减少 ${cost.toLocaleString()}。生活仍在继续，压力越来越大。`);
+        updateAssets();
+    } else if (state.cash > 0) {
+        state.cash = 0;
+        addMessage(`你的钱连基本生活都无法维持了！`, 'danger');
+        updateAssets();
+    }
+}
+
+// Mortgage and Sell logic
+document.getElementById('mortgage-car').addEventListener('click', () => {
+    if (state.car.sold || state.car.loan > 0) return;
+    state.car.loan = state.car.loanAmount;
+    state.cash += state.car.loanAmount;
+    playSound('win');
+    addMessage(`你抵押了车，贷到 ${state.car.loanAmount.toLocaleString()}。你觉得这是翻本的希望，但这其实是更深的深渊。`, 'info');
+    updateAssets();
+});
+document.getElementById('sell-car').addEventListener('click', () => {
+    if (state.car.sold) return;
+    const sellValue = state.car.value - state.car.loan;
+    state.cash += sellValue;
+    state.car.sold = true;
+    playSound('win');
+    addMessage(`你变卖了车，还掉贷款后到手 ${sellValue.toLocaleString()}。你失去的不仅是代步工具，还有尊严。`, 'warning');
+    updateAssets();
+});
+// Repeat for house
+document.getElementById('mortgage-house').addEventListener('click', () => {
+    if (state.house.sold || state.house.loan > 0) return;
+    state.house.loan = state.house.loanAmount;
+    state.cash += state.house.loanAmount;
+    playSound('win');
+    addMessage(`你抵押了最后的家，换来 ${state.house.loanAmount.toLocaleString()}。赌徒的末路，就是出卖一切。`, 'danger');
+    updateAssets();
+});
+document.getElementById('sell-house').addEventListener('click', () => {
+    if (state.house.sold) return;
+    const sellValue = state.house.value - state.house.loan;
+    state.cash += sellValue;
+    state.house.sold = true;
+    playSound('win');
+    addMessage(`<b>无家可归</b>：你变卖了房子，到手 ${sellValue.toLocaleString()}。从今往后，再无归处。`, 'danger');
+    updateAssets();
+});
+
+// --- Blackjack Game Logic ---
+const suits = {'♠': 'black', '♥': 'red', '♦': 'red', '♣': 'black'};
+const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+
+function createDeck() {
+    blackjack.deck = [];
+    for (let suit in suits) {
+        for (let value of values) {
+            blackjack.deck.push({suit, value});
         }
+    }
+    // Shuffle deck
+    blackjack.deck.sort(() => Math.random() - 0.5);
+}
 
-        class Particle {
-            constructor(x, y, ctx) {
-                this.ctx = ctx;
-                this.x = x;
-                this.y = y;
-                this.alpha = 1;
-                this.color = `hsl(${Math.random()*360}, 70%, 60%)`;
-                this.velocity = {
-                    x: (Math.random()-0.5)*8,
-                    y: (Math.random()-2.2)*4
-                };
-            }
+function getCardValue(card) {
+    if (['J','Q','K'].includes(card.value)) return 10;
+    if (card.value === 'A') return 11;
+    return parseInt(card.value);
+}
 
-            draw() {
-                this.ctx.fillStyle = this.color;
-                this.ctx.globalAlpha = this.alpha;
-                this.ctx.beginPath();
-                this.ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2);
-                this.ctx.fill();
-            }
+function calculateScore(hand) {
+    let score = hand.reduce((sum, card) => sum + getCardValue(card), 0);
+    let aces = hand.filter(card => card.value === 'A').length;
+    while (score > 21 && aces > 0) {
+        score -= 10;
+        aces--;
+    }
+    return score;
+}
 
-            update() {
-                this.x += this.velocity.x;
-                this.y += this.velocity.y;
-                this.alpha -= 0.015;
-            }
+function renderCard(card, isDealer, isHidden) {
+    playSound('card');
+    const cardEl = document.createElement('div');
+    cardEl.className = 'card back';
+    
+    if (isHidden) {
+        setTimeout(() => cardEl.classList.add('flipped'), 100);
+        return cardEl;
+    }
+
+    const value = card.value;
+    const suitSymbol = card.suit;
+    cardEl.innerHTML = `
+        <div class="card-face front"></div>
+        <div class="card-face back">
+            <span class="suit suit-top">${suitSymbol}</span>
+            <span>${value}</span>
+            <span class="suit suit-bottom">${suitSymbol}</span>
+        </div>
+    `;
+    cardEl.querySelector('.back').classList.add(suits[suitSymbol]);
+    setTimeout(() => cardEl.classList.add('flipped'), 100);
+    return cardEl;
+}
+
+function renderHands(showDealerCard = false) {
+    const playerArea = document.getElementById('player-cards');
+    const dealerArea = document.getElementById('dealer-cards');
+    playerArea.innerHTML = '';
+    dealerArea.innerHTML = '';
+    
+    blackjack.playerHand.forEach(card => playerArea.appendChild(renderCard(card, false, false)));
+    blackjack.dealerHand.forEach((card, index) => {
+        dealerArea.appendChild(renderCard(card, true, index === 0 && !showDealerCard));
+    });
+
+    document.getElementById('player-score').textContent = calculateScore(blackjack.playerHand);
+    if(showDealerCard) {
+        document.getElementById('dealer-score').textContent = calculateScore(blackjack.dealerHand);
+    } else {
+        document.getElementById('dealer-score').textContent = getCardValue(blackjack.dealerHand[1]);
+    }
+}
+
+function blackjackPlaceBet(amount) {
+    if (amount <= 0 || !Number.isInteger(amount)) { addMessage('请输入有效的投注金额。', 'warning'); return false; }
+    if (state.cash < amount) { addMessage('现金不足！', 'danger'); return false; }
+    state.cash -= amount;
+    blackjack.bet = amount;
+    playSound('bet');
+    addMessage(`下注 ${amount.toLocaleString()}，命运的牌局开始了...`);
+    updateAssets();
+    return true;
+}
+
+document.getElementById('blackjack-deal').addEventListener('click', () => {
+    const betAmount = parseInt(document.getElementById('blackjack-bet').value);
+    if (!blackjackPlaceBet(betAmount)) return;
+
+    blackjack.inProgress = true;
+    createDeck();
+    blackjack.playerHand = [blackjack.deck.pop(), blackjack.deck.pop()];
+    blackjack.dealerHand = [blackjack.deck.pop(), blackjack.deck.pop()];
+    
+    document.getElementById('blackjack-deal').disabled = true;
+    document.getElementById('blackjack-hit').disabled = false;
+    document.getElementById('blackjack-stand').disabled = false;
+    
+    renderHands();
+
+    if (calculateScore(blackjack.playerHand) === 21) {
+        endBlackjackRound(true); // Player Blackjack
+    }
+});
+
+document.getElementById('blackjack-hit').addEventListener('click', () => {
+    blackjack.playerHand.push(blackjack.deck.pop());
+    renderHands();
+    if (calculateScore(blackjack.playerHand) > 21) {
+        addMessage("<b>爆了！</b>你因为贪婪而输掉了这一局。", 'danger');
+        endBlackjackRound(false, 'lose');
+    }
+});
+
+document.getElementById('blackjack-stand').addEventListener('click', () => {
+    document.getElementById('blackjack-hit').disabled = true;
+    document.getElementById('blackjack-stand').disabled = true;
+    dealerTurn();
+});
+
+function dealerTurn() {
+    renderHands(true);
+    let dealerScore = calculateScore(blackjack.dealerHand);
+    if (dealerScore > 21) {
+        endBlackjackRound(false, 'win', '庄家爆了！');
+        return;
+    }
+    if (dealerScore >= 17) {
+        endBlackjackRound(false);
+        return;
+    }
+    setTimeout(() => {
+        blackjack.dealerHand.push(blackjack.deck.pop());
+        dealerTurn();
+    }, 1000);
+}
+
+function endBlackjackRound(isPlayerBlackjack = false, forceResult = null, customMessage = '') {
+    renderHands(true);
+    let resultMessage = '';
+    let winAmount = 0;
+    
+    if (isPlayerBlackjack) {
+        winAmount = blackjack.bet * 2.5; // Blackjack pays 3:2
+        resultMessage = `<b>Blackjack!</b> 难得的运气让你赢了 ${winAmount.toLocaleString()}`;
+        playSound('win');
+    } else {
+        const playerScore = calculateScore(blackjack.playerHand);
+        const dealerScore = calculateScore(blackjack.dealerHand);
+        let outcome;
+
+        if (forceResult) {
+            outcome = forceResult;
+        } else {
+            if (playerScore > 21) outcome = 'lose';
+            else if (dealerScore > 21) outcome = 'win';
+            else if (playerScore > dealerScore) outcome = 'win';
+            else if (playerScore < dealerScore) outcome = 'lose';
+            else outcome = 'push';
         }
+        
+        if (outcome === 'win') {
+            winAmount = blackjack.bet * 2;
+            resultMessage = customMessage || `你赢了。赢回了 ${winAmount.toLocaleString()}。`;
+            playSound('win');
+        } else if (outcome === 'lose') {
+            winAmount = 0;
+            resultMessage = `你输了。输掉了 ${blackjack.bet.toLocaleString()}。`;
+            playSound('lose');
+        } else { // Push
+            winAmount = blackjack.bet;
+            resultMessage = `平局。资金返还。你侥幸逃过一劫。`;
+        }
+    }
 
-        // 初始化系统
-        const init = () => {
-            initAudio();
-            new SakuraSystem();
-            const fireworks = new FireworkSystem();
-            
-            document.querySelector('.love-btn').addEventListener('click', function(e) {
-                fireworks.create(e.clientX, e.clientY);
-                anime({
-                    targets: '.message p',
-                    translateY: [-15, 0],
-                    opacity: [0, 1],
-                    delay: anime.stagger(120),
-                    duration: 800,
-                    easing: 'easeOutElastic'
-                });
-                
-                this.classList.add('active');
-                setTimeout(() => this.classList.remove('active'), 500);
-            });
-        };
+    addMessage(resultMessage, winAmount > blackjack.bet ? 'success' : (winAmount === 0 ? 'danger' : ''));
+    state.cash += winAmount;
+    
+    setTimeout(() => {
+        blackjack.inProgress = false;
+        document.getElementById('blackjack-deal').disabled = false;
+        document.getElementById('blackjack-hit').disabled = true;
+        document.getElementById('blackjack-stand').disabled = true;
+        updateAssets();
+    }, 1500);
+}
 
-        // 加载动画库
-        const loadAnime = () => {
-            return new Promise((resolve) => {
-                if(window.anime) return resolve();
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js';
-                script.onload = resolve;
-                document.head.appendChild(script);
-            });
-        };
+// --- Initialization and Finalization ---
+function endGame() {
+    clearInterval(state.dailyExpenseInterval);
+    document.getElementById('final-message').style.display = 'flex';
+}
+document.getElementById('restart-button').addEventListener('click', () => location.reload());
 
-        // 启动
-        loadAnime().then(init);
-    </script>
+// Initial Load
+document.addEventListener('DOMContentLoaded', () => {
+    // Fill in other games with placeholders to avoid errors
+    document.getElementById('slots-game').innerHTML = `<h1>深渊老虎机</h1><p>还在开发，即将上线</p>`;
+    document.getElementById('crash-game').innerHTML = `<h1>疯狂Crash</h1><p>还在开发，即将上线</p>`;
+
+    addMessage('你拥有一个美满的家庭和殷实的家底。但你走进了赌场...');
+    state.dailyExpenseInterval = setInterval(applyLifeCost, 20000); // 20-second cycle for life cost
+    updateAssets();
+});
+</script>
 </body>
 </html>
