@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>赌博模拟器 - 最终的深渊</title>
+<title>张龙昊的深渊</title>
 <style>
     :root {
         --gold-color: #ffc107; --dark-bg: #121212; --primary-bg: #1e1e1e;
@@ -15,12 +15,12 @@
     body {
         font-family: 'Noto Sans SC', sans-serif; background-color: var(--dark-bg);
         color: var(--text-color); margin: 0; overflow: hidden;
-        background: url('https://images.unsplash.com/photo-1519638399535-1b039606e927?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+        background: url('https://images.unsplash.com/photo-1543722530-534b421487f2?q=80&w=1974&auto=format&fit=crop') no-repeat center center/cover;
         position: relative; height: 100vh;
     }
     body::before {
         content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1;
+        background-color: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 1;
     }
 
     .container {
@@ -28,14 +28,14 @@
     }
 
     .sidebar {
-        width: 340px; background-color: rgba(28, 28, 28, 0.9);
+        width: 350px; background-color: rgba(28, 28, 28, 0.9);
         padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
         display: flex; flex-direction: column; border-right: 1px solid var(--gold-color);
-        overflow-y: auto;
+        overflow-y: auto; transition: width 0.3s ease;
     }
     .assets h2, .message-board h3 {
         color: var(--gold-color); border-bottom: 2px solid var(--gold-color);
-        padding-bottom: 10px; margin-top: 0; font-weight: 700;
+        padding-bottom: 10px; margin-top: 0; font-weight: 700; text-align: center;
     }
     .asset-item {
         background-color: var(--secondary-bg); margin: 12px 0; padding: 15px;
@@ -57,10 +57,10 @@
 
     .message-board {
         margin-top: 20px; background-color: rgba(0,0,0,0.4); padding: 15px;
-        border-radius: 8px; flex-shrink: 0; height: 300px; overflow-y: auto;
+        border-radius: 8px; flex-shrink: 0; height: 350px; overflow-y: auto;
     }
     #messages { list-style-type: none; padding: 0; margin: 0; font-size: 14px; }
-    #messages li { margin-bottom: 10px; line-height: 1.5; color: #ccc; border-bottom: 1px solid #333; padding-bottom: 8px;}
+    #messages li { margin-bottom: 10px; line-height: 1.6; color: #ccc; border-bottom: 1px solid #333; padding-bottom: 8px;}
     #messages li.warning { color: var(--warning-color); } #messages li.danger { color: var(--danger-color); }
     #messages li.success { color: var(--success-color); } #messages li.info { color: var(--loan-color); }
 
@@ -109,26 +109,45 @@
         padding: 20px; box-sizing: border-box;
     }
     #final-message h1 { color: var(--danger-color); font-size: 3em; }
-    #final-message p { font-size: 1.2em; max-width: 90%; margin: 20px 0; }
+    #final-message p { font-size: 1.2em; max-width: 90%; margin: 20px 0; line-height: 1.7; }
     #restart-button { padding: 15px 40px; font-size: 1.2em; background-color: var(--gold-color); color: #111; border: none; border-radius: 5px; cursor: pointer; }
 
     /* Responsive Design for Mobile */
     @media (max-width: 768px) {
-        .container { flex-direction: column; }
+        .container { flex-direction: column; height: auto; min-height: 100vh;}
         .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; justify-content: space-around; border-right: none; border-bottom: 1px solid var(--gold-color); box-sizing: border-box; }
         .assets, .message-board { width: 100%; box-sizing: border-box; }
-        .message-board { margin-top: 10px; height: 150px; }
+        .message-board { margin-top: 10px; height: 200px; }
         .asset-item { flex-direction: column; align-items: center; text-align: center; padding: 10px; }
         .asset-item span:first-child { margin-bottom: 5px; }
         .asset-item .actions { margin-top: 5px; }
-        .main-content { padding: 10px; }
+        .main-content { padding: 10px; flex-grow: 1; }
         .game-nav button { font-size: 14px; padding: 10px 2px; }
+        .game-view { padding: 15px; }
         .game-view h1 { font-size: 1.5em; }
         .controls input { width: 100px; }
         .controls button { padding: 10px 15px; font-size: 14px; }
         .card { width: 45px; height: 70px; font-size: 18px; }
         #final-message h1 { font-size: 2.5em; }
         #final-message p { font-size: 1em; }
+    }
+    
+    /* Mobile Landscape */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .container { flex-direction: row; }
+        .sidebar { width: 220px; justify-content: flex-start; }
+        .assets, .message-board { width: 100%; }
+        .message-board { height: 150px; }
+        .asset-item { flex-direction: row; justify-content: space-between; }
+        .asset-item span:first-child { margin-bottom: 0; }
+        .asset-item .actions { margin-top: 0; }
+        .main-content { flex-grow: 1; padding: 10px;}
+        .game-view h1 { font-size: 1.2em; margin-bottom: 10px; }
+        .card { width: 40px; height: 60px; font-size: 16px; margin: 2px;}
+        .hand-area { min-height: 70px; }
+        .controls { margin-top: 10px; }
+        .controls input { width: 80px; padding: 8px; font-size: 12px;}
+        .controls button { padding: 8px 12px; font-size: 12px; }
     }
 
 </style>
@@ -145,27 +164,27 @@
 <div class="container">
     <div class="sidebar">
         <div class="assets">
-            <h2>我的资产</h2>
-            <div id="cash-item" class="asset-item"><span>存款</span><span id="cash" class="value">500000</span></div>
-            <div id="house-item" class="asset-item">
-                <span>房子 (150万)</span>
-                <div class="actions">
-                    <button id="mortgage-house" class="loan-btn">抵押 (贷90万)</button>
-                    <button id="sell-house">变卖</button>
-                </div>
-            </div>
+            <h2>我的所有</h2>
+            <div id="cash-item" class="asset-item"><span>存款</span><span id="cash" class="value">80000</span></div>
             <div id="car-item" class="asset-item">
-                <span>车子 (30万)</span>
+                <span>婚车 (20万)</span>
                 <div class="actions">
-                    <button id="mortgage-car" class="loan-btn">抵押 (贷15万)</button>
+                    <button id="mortgage-car" class="loan-btn">抵押 (贷12万)</button>
                     <button id="sell-car">变卖</button>
                 </div>
             </div>
-            <div id="wife-item" class="asset-item"><span>妻子</span><span id="wife-status" class="value">陪伴</span></div>
-            <div id="daughter-item" class="asset-item"><span>女儿</span><span id="daughter-status" class="value">陪伴</span></div>
+            <div id="house-item" class="asset-item">
+                <span>父母的养老房 (80万)</span>
+                <div class="actions">
+                    <button id="mortgage-house" class="loan-btn">抵押 (贷50万)</button>
+                    <button id="sell-house">变卖</button>
+                </div>
+            </div>
+            <div id="father-item" class="asset-item"><span>父亲的健康</span><span id="father-status" class="value">安康</span></div>
+            <div id="mother-item" class="asset-item"><span>母亲的微笑</span><span id="mother-status" class="value">慈爱</span></div>
         </div>
         <div class="message-board">
-            <h3>劝诫板</h3>
+            <h3>深渊回响</h3>
             <ul id="messages"></ul>
         </div>
     </div>
@@ -186,7 +205,7 @@
                     <div class="cards" id="dealer-cards"></div>
                 </div>
                 <div>
-                    <h3>你 (<span id="player-score">0</span>)</h3>
+                    <h3>张龙昊 (<span id="player-score">0</span>)</h3>
                     <div class="cards" id="player-cards"></div>
                 </div>
             </div>
@@ -198,28 +217,27 @@
             </div>
         </div>
         
-        <!-- Slots Game (Simplified for brevity, full code in previous versions) -->
-        <div id="slots-game" class="game-view" style="justify-content:center;">...</div>
-        <!-- Crash Game (Simplified for brevity, full code in previous versions) -->
-        <div id="crash-game" class="game-view" style="justify-content:center;">...</div>
+        <div id="slots-game" class="game-view" style="justify-content:center;"><h1>深渊老虎机</h1><p>未知的黑暗，正等待吞噬你的理智。</p></div>
+        <div id="crash-game" class="game-view" style="justify-content:center;"><h1>疯狂Crash</h1><p>那根飞速上涨的线，就是你生命的倒计时。</p></div>
 
     </div>
 </div>
 
 <div id="final-message">
-    <h1>万劫不复</h1>
-    <p>债务缠身，家破人亡。你曾拥有的一切都化为泡影。赌博这条路，没有赢家，终点永远是毁灭。这只是一个模拟器，但请永远记住这份窒息的感觉。</p>
-    <p><strong>警钟长鸣，远离赌博。</strong></p>
-    <button id="restart-button">重新开始</button>
+    <h1>一无所有，万念俱灰</h1>
+    <p>张龙昊，一切都结束了。婚车没了，父母一生的心血——那套养老房，也被你输掉了。电话里，母亲的哭声和父亲倒地的声音混在一起，那是你亲手制造的人间惨剧。</p>
+    <p>你不但毁了自己，更毁了那个世界上最爱你的人。赌博的终点不是财富，而是无法偿还的血债和永世的悔恨。</p>
+    <p><strong>警钟长鸣，远离赌博，珍惜家人。</strong></p>
+    <button id="restart-button">在悔恨中重来</button>
 </div>
 
 <script>
 // --- State Management ---
 let state = {
-    cash: 500000,
-    house: { value: 1500000, sold: false, loan: 0, loanAmount: 900000 },
-    car: { value: 300000, sold: false, loan: 0, loanAmount: 150000 },
-    family: { wife: '陪伴', daughter: '陪伴', arguments: 0 },
+    cash: 80000,
+    house: { value: 800000, sold: false, loan: 0, loanAmount: 500000 },
+    car: { value: 200000, sold: false, loan: 0, loanAmount: 120000 },
+    family: { father: '安康', mother: '慈爱', stage: 0 },
     dailyExpenseInterval: null,
 };
 // Game states
@@ -235,7 +253,7 @@ const sounds = {
     card: document.getElementById('sound-card'),
     familyLeave: document.getElementById('sound-family-leave')
 };
-function playSound(sound) { sounds[sound]?.play(); }
+function playSound(sound) { try { sounds[sound]?.play(); } catch (e) { console.warn("Audio play failed:", e)} }
 
 // --- Utility Functions ---
 function switchGame(gameId) {
@@ -260,42 +278,54 @@ function updateAssets() {
         const actionsEl = itemEl.querySelector('.actions');
         if (itemState.sold) {
             itemEl.className = 'asset-item sold-out';
-            actionsEl.innerHTML = `<span class="sold">已变卖</span>`;
+            if (actionsEl) actionsEl.innerHTML = `<span class="sold">已变卖</span>`;
         } else if (itemState.loan > 0) {
             itemEl.className = 'asset-item in-loan';
-            actionsEl.innerHTML = `<span class="loan-text">已抵押 (欠${itemState.loan.toLocaleString()})</span>`;
+            if (actionsEl) actionsEl.innerHTML = `<span class="loan-text">已抵押 (欠${itemState.loan.toLocaleString()})</span>`;
         }
     };
     updateItem(state.house, 'house', state.house);
     updateItem(state.car, 'car', state.car);
 
-    document.getElementById('wife-status').textContent = state.family.wife;
-    document.getElementById('daughter-status').textContent = state.family.daughter;
-    const wifeItem = document.getElementById('wife-item');
-    if(state.family.wife !== '陪伴') wifeItem.classList.add('left');
-    else wifeItem.classList.remove('left');
+    document.getElementById('father-status').textContent = state.family.father;
+    document.getElementById('mother-status').textContent = state.family.mother;
+    if(state.family.father !== '安康') document.getElementById('father-item').classList.add('left');
+    if(state.family.mother !== '慈爱') document.getElementById('mother-item').classList.add('left');
 
     checkConsequences();
 }
 
 function checkConsequences() {
-    const totalAssets = state.cash + (state.house.sold ? 0 : state.house.value) + (state.car.sold ? 0 : state.car.value);
+    const totalValue = state.cash + (state.house.sold ? 0 : state.house.value) + (state.car.sold ? 0 : state.car.value);
     
-    // Family status checks
-    if (state.family.wife === '陪伴' && state.car.loan > 0 && state.family.arguments === 0) {
-        state.family.arguments++;
-        addMessage('你抵押了车子，妻子和你大吵一架，说日子没法过了。', 'warning');
+    // Family status checks based on story stages
+    if (state.family.stage === 0 && state.car.loan > 0) {
+        state.family.stage = 1;
+        addMessage('你对父母谎称生意周转，抵押了准备结婚用的车。母亲的眼神里第一次有了忧虑。', 'warning');
     }
-    if (state.family.wife === '陪伴' && state.house.loan > 0 && state.family.arguments === 1) {
-        state.family.arguments++;
-        state.family.wife = '失望';
-        addMessage('你把房子也抵押了！妻子对你彻底失望，整日以泪洗面。', 'danger');
+    if (state.family.stage === 1 && totalValue < 800000) { // Lost car value
+        state.family.stage = 2;
+        state.family.mother = '忧虑';
+        addMessage('车贷的窟窿没补上，反而越陷越深。你开始躲着父母的电话，他们的关心让你感到无比烦躁。', 'warning');
+        updateAssets();
     }
-    if (state.family.wife !== '已离开' && totalAssets < 200000) {
+    if (state.family.stage === 2 && state.house.loan > 0) {
+        state.family.stage = 3;
+        state.family.mother = '终日流泪';
+        addMessage('你偷走了房产证，抵押了父母唯一的养老房。拿到钱的那一刻，你告诉自己，这是最后一次，一定要翻本！', 'danger');
+        updateAssets();
+    }
+    if (state.family.stage === 3 && state.car.sold) {
+        state.family.stage = 4;
+        addMessage('为了还抵押车的利息，你不得不变卖了它。你失去的不仅是代步工具，更是对未婚妻的承诺。婚约，也到此为止了。', 'danger');
+    }
+     if (state.family.stage === 4 && totalValue < 50000) {
+        state.family.stage = 5;
+        state.family.father = '气急攻心';
+        state.family.mother = '肝肠寸断';
         playSound('familyLeave');
-        state.family.wife = '已离开';
-        state.family.daughter = '已离开';
-        addMessage('<b>家破人亡</b>：你的资产已无法支撑一个家。妻子带着女儿，永远地离开了这个被你毁掉的港湾。', 'danger');
+        addMessage('<b>家破人亡</b>：债主找上了门，父母才知晓一切。老实的父亲被你气得突发心梗，母亲哭晕在医院走廊。你，成了这个家的罪人。', 'danger');
+        updateAssets();
     }
 
     if (state.cash <= 0 && state.car.sold && state.house.sold) {
@@ -304,14 +334,14 @@ function checkConsequences() {
 }
 
 function applyLifeCost() {
-    const cost = 5000;
+    const cost = 2000;
     if (state.cash >= cost) {
         state.cash -= cost;
-        addMessage(`日常开销，存款减少 ${cost.toLocaleString()}。生活仍在继续，压力越来越大。`);
+        addMessage(`日常开销、高额利息... 存款减少 ${cost.toLocaleString()}。你感到喘不过气。`);
         updateAssets();
     } else if (state.cash > 0) {
         state.cash = 0;
-        addMessage(`你的钱连基本生活都无法维持了！`, 'danger');
+        addMessage(`你的钱连利息都还不起了！电话开始响个不停。`, 'danger');
         updateAssets();
     }
 }
@@ -322,7 +352,7 @@ document.getElementById('mortgage-car').addEventListener('click', () => {
     state.car.loan = state.car.loanAmount;
     state.cash += state.car.loanAmount;
     playSound('win');
-    addMessage(`你抵押了车，贷到 ${state.car.loanAmount.toLocaleString()}。你觉得这是翻本的希望，但这其实是更深的深渊。`, 'info');
+    addMessage(`你抵押了婚车，贷到 ${state.car.loanAmount.toLocaleString()}。你骗自己说这是“暂时的”，赢了就赎回来。`, 'info');
     updateAssets();
 });
 document.getElementById('sell-car').addEventListener('click', () => {
@@ -331,16 +361,15 @@ document.getElementById('sell-car').addEventListener('click', () => {
     state.cash += sellValue;
     state.car.sold = true;
     playSound('win');
-    addMessage(`你变卖了车，还掉贷款后到手 ${sellValue.toLocaleString()}。你失去的不仅是代步工具，还有尊严。`, 'warning');
+    addMessage(`你变卖了婚车，还掉贷款后到手 ${sellValue.toLocaleString()}。你和她的未来，也一起卖掉了。`, 'warning');
     updateAssets();
 });
-// Repeat for house
 document.getElementById('mortgage-house').addEventListener('click', () => {
     if (state.house.sold || state.house.loan > 0) return;
     state.house.loan = state.house.loanAmount;
     state.cash += state.house.loanAmount;
     playSound('win');
-    addMessage(`你抵押了最后的家，换来 ${state.house.loanAmount.toLocaleString()}。赌徒的末路，就是出卖一切。`, 'danger');
+    addMessage(`你抵押了父母的养老房，换来 ${state.house.loanAmount.toLocaleString()}。你已经不是人，是个畜生。`, 'danger');
     updateAssets();
 });
 document.getElementById('sell-house').addEventListener('click', () => {
@@ -349,7 +378,7 @@ document.getElementById('sell-house').addEventListener('click', () => {
     state.cash += sellValue;
     state.house.sold = true;
     playSound('win');
-    addMessage(`<b>无家可归</b>：你变卖了房子，到手 ${sellValue.toLocaleString()}。从今往后，再无归处。`, 'danger');
+    addMessage(`<b>无家可归</b>：你变卖了父母最后的栖身之所，到手 ${sellValue.toLocaleString()}。从今往后，你不仅是赌徒，还是不孝子。`, 'danger');
     updateAssets();
 });
 
@@ -359,179 +388,133 @@ const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 
 function createDeck() {
     blackjack.deck = [];
-    for (let suit in suits) {
-        for (let value of values) {
-            blackjack.deck.push({suit, value});
-        }
-    }
-    // Shuffle deck
+    for (let suit in suits) { for (let value of values) { blackjack.deck.push({suit, value}); } }
     blackjack.deck.sort(() => Math.random() - 0.5);
 }
-
 function getCardValue(card) {
     if (['J','Q','K'].includes(card.value)) return 10;
     if (card.value === 'A') return 11;
     return parseInt(card.value);
 }
-
 function calculateScore(hand) {
     let score = hand.reduce((sum, card) => sum + getCardValue(card), 0);
     let aces = hand.filter(card => card.value === 'A').length;
-    while (score > 21 && aces > 0) {
-        score -= 10;
-        aces--;
-    }
+    while (score > 21 && aces > 0) { score -= 10; aces--; }
     return score;
 }
-
 function renderCard(card, isDealer, isHidden) {
     playSound('card');
     const cardEl = document.createElement('div');
     cardEl.className = 'card back';
-    
     if (isHidden) {
         setTimeout(() => cardEl.classList.add('flipped'), 100);
         return cardEl;
     }
-
-    const value = card.value;
-    const suitSymbol = card.suit;
+    const value = card.value; const suitSymbol = card.suit;
     cardEl.innerHTML = `
         <div class="card-face front"></div>
-        <div class="card-face back">
+        <div class="card-face back ${suits[suitSymbol]}">
             <span class="suit suit-top">${suitSymbol}</span>
             <span>${value}</span>
             <span class="suit suit-bottom">${suitSymbol}</span>
         </div>
     `;
-    cardEl.querySelector('.back').classList.add(suits[suitSymbol]);
     setTimeout(() => cardEl.classList.add('flipped'), 100);
     return cardEl;
 }
-
 function renderHands(showDealerCard = false) {
     const playerArea = document.getElementById('player-cards');
     const dealerArea = document.getElementById('dealer-cards');
-    playerArea.innerHTML = '';
-    dealerArea.innerHTML = '';
-    
+    playerArea.innerHTML = ''; dealerArea.innerHTML = '';
     blackjack.playerHand.forEach(card => playerArea.appendChild(renderCard(card, false, false)));
     blackjack.dealerHand.forEach((card, index) => {
         dealerArea.appendChild(renderCard(card, true, index === 0 && !showDealerCard));
     });
-
     document.getElementById('player-score').textContent = calculateScore(blackjack.playerHand);
     if(showDealerCard) {
         document.getElementById('dealer-score').textContent = calculateScore(blackjack.dealerHand);
     } else {
-        document.getElementById('dealer-score').textContent = getCardValue(blackjack.dealerHand[1]);
+        document.getElementById('dealer-score').textContent = blackjack.dealerHand.length > 1 ? getCardValue(blackjack.dealerHand[1]) : 0;
     }
 }
-
 function blackjackPlaceBet(amount) {
-    if (amount <= 0 || !Number.isInteger(amount)) { addMessage('请输入有效的投注金额。', 'warning'); return false; }
-    if (state.cash < amount) { addMessage('现金不足！', 'danger'); return false; }
+    if (amount <= 0 || !Number.isInteger(amount)) { addMessage('醒醒吧，别乱来！', 'warning'); return false; }
+    if (state.cash < amount) { addMessage('你没有那么多钱了！想动歪心思吗？', 'danger'); return false; }
     state.cash -= amount;
     blackjack.bet = amount;
     playSound('bet');
-    addMessage(`下注 ${amount.toLocaleString()}，命运的牌局开始了...`);
+    addMessage(`押上 ${amount.toLocaleString()}，你觉得这次能赢回所有...`);
     updateAssets();
     return true;
 }
-
 document.getElementById('blackjack-deal').addEventListener('click', () => {
     const betAmount = parseInt(document.getElementById('blackjack-bet').value);
     if (!blackjackPlaceBet(betAmount)) return;
-
     blackjack.inProgress = true;
     createDeck();
     blackjack.playerHand = [blackjack.deck.pop(), blackjack.deck.pop()];
     blackjack.dealerHand = [blackjack.deck.pop(), blackjack.deck.pop()];
-    
     document.getElementById('blackjack-deal').disabled = true;
     document.getElementById('blackjack-hit').disabled = false;
     document.getElementById('blackjack-stand').disabled = false;
-    
     renderHands();
-
     if (calculateScore(blackjack.playerHand) === 21) {
-        endBlackjackRound(true); // Player Blackjack
+        endBlackjackRound(true);
     }
 });
-
 document.getElementById('blackjack-hit').addEventListener('click', () => {
     blackjack.playerHand.push(blackjack.deck.pop());
     renderHands();
     if (calculateScore(blackjack.playerHand) > 21) {
-        addMessage("<b>爆了！</b>你因为贪婪而输掉了这一局。", 'danger');
+        addMessage("<b>爆了！</b>贪婪让你再次坠入深渊。", 'danger');
         endBlackjackRound(false, 'lose');
     }
 });
-
 document.getElementById('blackjack-stand').addEventListener('click', () => {
     document.getElementById('blackjack-hit').disabled = true;
     document.getElementById('blackjack-stand').disabled = true;
     dealerTurn();
 });
-
 function dealerTurn() {
     renderHands(true);
     let dealerScore = calculateScore(blackjack.dealerHand);
-    if (dealerScore > 21) {
-        endBlackjackRound(false, 'win', '庄家爆了！');
-        return;
-    }
-    if (dealerScore >= 17) {
-        endBlackjackRound(false);
-        return;
-    }
-    setTimeout(() => {
-        blackjack.dealerHand.push(blackjack.deck.pop());
-        dealerTurn();
-    }, 1000);
+    if (dealerScore > 21) { endBlackjackRound(false, 'win', '庄家爆了！你逃过一劫。'); return; }
+    if (dealerScore >= 17) { endBlackjackRound(false); return; }
+    setTimeout(() => { blackjack.dealerHand.push(blackjack.deck.pop()); dealerTurn(); }, 1000);
 }
-
 function endBlackjackRound(isPlayerBlackjack = false, forceResult = null, customMessage = '') {
     renderHands(true);
-    let resultMessage = '';
-    let winAmount = 0;
-    
+    let resultMessage = ''; let winAmount = 0;
     if (isPlayerBlackjack) {
-        winAmount = blackjack.bet * 2.5; // Blackjack pays 3:2
-        resultMessage = `<b>Blackjack!</b> 难得的运气让你赢了 ${winAmount.toLocaleString()}`;
+        winAmount = blackjack.bet * 2.5;
+        resultMessage = `<b>Blackjack!</b> 命运女神的微笑？你赢了 ${winAmount.toLocaleString()}`;
         playSound('win');
     } else {
-        const playerScore = calculateScore(blackjack.playerHand);
-        const dealerScore = calculateScore(blackjack.dealerHand);
+        const playerScore = calculateScore(blackjack.playerHand); const dealerScore = calculateScore(blackjack.dealerHand);
         let outcome;
-
-        if (forceResult) {
-            outcome = forceResult;
-        } else {
+        if (forceResult) { outcome = forceResult; }
+        else {
             if (playerScore > 21) outcome = 'lose';
             else if (dealerScore > 21) outcome = 'win';
             else if (playerScore > dealerScore) outcome = 'win';
             else if (playerScore < dealerScore) outcome = 'lose';
             else outcome = 'push';
         }
-        
         if (outcome === 'win') {
             winAmount = blackjack.bet * 2;
-            resultMessage = customMessage || `你赢了。赢回了 ${winAmount.toLocaleString()}。`;
+            resultMessage = customMessage || `你赢了。赢回 ${winAmount.toLocaleString()}。这点钱，够还利息吗？`;
             playSound('win');
         } else if (outcome === 'lose') {
             winAmount = 0;
-            resultMessage = `你输了。输掉了 ${blackjack.bet.toLocaleString()}。`;
+            resultMessage = `你输了。又输掉了 ${blackjack.bet.toLocaleString()}。离地狱又近了一步。`;
             playSound('lose');
-        } else { // Push
+        } else {
             winAmount = blackjack.bet;
-            resultMessage = `平局。资金返还。你侥幸逃过一劫。`;
+            resultMessage = `平局。资金返还。没有输，但也没有赢。你感到一阵后怕。`;
         }
     }
-
     addMessage(resultMessage, winAmount > blackjack.bet ? 'success' : (winAmount === 0 ? 'danger' : ''));
     state.cash += winAmount;
-    
     setTimeout(() => {
         blackjack.inProgress = false;
         document.getElementById('blackjack-deal').disabled = false;
@@ -550,11 +533,7 @@ document.getElementById('restart-button').addEventListener('click', () => locati
 
 // Initial Load
 document.addEventListener('DOMContentLoaded', () => {
-    // Fill in other games with placeholders to avoid errors
-    document.getElementById('slots-game').innerHTML = `<h1>深渊老虎机</h1><p>还在开发，即将上线</p>`;
-    document.getElementById('crash-game').innerHTML = `<h1>疯狂Crash</h1><p>还在开发，即将上线</p>`;
-
-    addMessage('你拥有一个美满的家庭和殷实的家底。但你走进了赌场...');
+    addMessage('我叫张龙昊，本是父母的骄傲，未来的希望...直到我点开了这个界面。');
     state.dailyExpenseInterval = setInterval(applyLifeCost, 20000); // 20-second cycle for life cost
     updateAssets();
 });
