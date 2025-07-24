@@ -1,542 +1,241 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>张龙昊的深渊</title>
-<style>
-    :root {
-        --gold-color: #ffc107; --dark-bg: #121212; --primary-bg: #1e1e1e;
-        --secondary-bg: #2c2c2c; --text-color: #e0e0e0; --danger-color: #dc3545;
-        --success-color: #28a745; --warning-color: #ff9800; --loan-color: #0dcaf0;
-    }
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&display=swap');
-    
-    body {
-        font-family: 'Noto Sans SC', sans-serif; background-color: var(--dark-bg);
-        color: var(--text-color); margin: 0; overflow: hidden;
-        background: url('https://images.unsplash.com/photo-1543722530-534b421487f2?q=80&w=1974&auto=format&fit=crop') no-repeat center center/cover;
-        position: relative; height: 100vh;
-    }
-    body::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background-color: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 1;
-    }
-
-    .container {
-        display: flex; width: 100%; height: 100%; z-index: 2; position: relative;
-    }
-
-    .sidebar {
-        width: 350px; background-color: rgba(28, 28, 28, 0.9);
-        padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-        display: flex; flex-direction: column; border-right: 1px solid var(--gold-color);
-        overflow-y: auto; transition: width 0.3s ease;
-    }
-    .assets h2, .message-board h3 {
-        color: var(--gold-color); border-bottom: 2px solid var(--gold-color);
-        padding-bottom: 10px; margin-top: 0; font-weight: 700; text-align: center;
-    }
-    .asset-item {
-        background-color: var(--secondary-bg); margin: 12px 0; padding: 15px;
-        border-radius: 8px; display: flex; justify-content: space-between;
-        align-items: center; transition: all 0.3s ease; border-left: 5px solid var(--gold-color);
-    }
-    .asset-item.sold-out, .asset-item.left { border-left-color: var(--danger-color); background-color: #444;}
-    .asset-item.in-loan { border-left-color: var(--loan-color); }
-    .asset-item span:first-child { font-weight: bold; }
-    .asset-item .value { color: var(--success-color); font-weight: bold; }
-    .asset-item .sold, .asset-item .left-text { color: var(--danger-color); font-weight: bold; }
-    .asset-item .loan-text { color: var(--loan-color); font-weight: bold; }
-    .asset-item .actions button {
-        background-color: var(--danger-color); color: white; border: none; padding: 5px 8px;
-        border-radius: 5px; cursor: pointer; font-size: 11px; margin-left: 5px;
-    }
-    .asset-item .actions button.loan-btn { background-color: var(--loan-color); }
-    .asset-item .actions button:disabled { background-color: #6c757d; cursor: not-allowed; }
-
-    .message-board {
-        margin-top: 20px; background-color: rgba(0,0,0,0.4); padding: 15px;
-        border-radius: 8px; flex-shrink: 0; height: 350px; overflow-y: auto;
-    }
-    #messages { list-style-type: none; padding: 0; margin: 0; font-size: 14px; }
-    #messages li { margin-bottom: 10px; line-height: 1.6; color: #ccc; border-bottom: 1px solid #333; padding-bottom: 8px;}
-    #messages li.warning { color: var(--warning-color); } #messages li.danger { color: var(--danger-color); }
-    #messages li.success { color: var(--success-color); } #messages li.info { color: var(--loan-color); }
-
-    .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow: hidden; }
-    .game-nav { display: flex; margin-bottom: 20px; background-color: rgba(0,0,0,0.5); border-radius: 10px; padding: 5px; }
-    .game-nav button { flex: 1; padding: 15px 5px; font-size: 16px; font-weight: bold; background: transparent; color: #aaa; border: none; cursor: pointer; transition: all 0.3s ease; border-bottom: 3px solid transparent; }
-    .game-nav button.active { color: var(--gold-color); border-bottom-color: var(--gold-color); }
-
-    .game-view { display: none; background-color: rgba(44, 44, 44, 0.85); padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; flex-grow: 1; overflow-y: auto; }
-    .game-view.active { display: flex; flex-direction: column; }
-    .game-view h1 { color: var(--gold-color); margin-top: 0; font-size: 2em; }
-
-    /* Blackjack Styles */
-    #blackjack-game .table { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-around; }
-    .hand-area { min-height: 100px; }
-    .cards { display: flex; justify-content: center; flex-wrap: wrap; }
-    .card {
-        background-color: white; color: black; width: 60px; height: 90px;
-        border-radius: 5px; border: 1px solid #888; margin: 5px;
-        display: inline-flex; justify-content: center; align-items: center;
-        font-size: 24px; font-weight: bold; position: relative;
-        transform-style: preserve-3d; transition: transform 0.6s;
-    }
-    .card .suit { position: absolute; font-size: 12px; }
-    .card .suit-top { top: 5px; left: 5px; }
-    .card .suit-bottom { bottom: 5px; right: 5px; transform: rotate(180deg); }
-    .card.red { color: #f00; }
-    .card.back { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .card.flipped { transform: rotateY(180deg); }
-    .hand-value { font-size: 1.2em; font-weight: bold; margin-top: 10px; }
-
-    .controls { margin-top: 20px; }
-    .controls input { width: 120px; padding: 10px; border-radius: 5px; border: 2px solid #555; background-color: #333; color: white; font-size: 16px; text-align: center; }
-    .controls button {
-        padding: 10px 20px; font-size: 16px; font-weight: bold;
-        background: linear-gradient(45deg, var(--gold-color), var(--warning-color));
-        color: #111; border: none; border-radius: 5px; cursor: pointer;
-        transition: all 0.3s ease; margin: 0 5px;
-    }
-    .controls button:disabled { background: #555; color: #888; cursor: not-allowed; }
-
-    #final-message {
-        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.97); color: white; flex-direction: column;
-        justify-content: center; align-items: center; text-align: center; z-index: 1000;
-        padding: 20px; box-sizing: border-box;
-    }
-    #final-message h1 { color: var(--danger-color); font-size: 3em; }
-    #final-message p { font-size: 1.2em; max-width: 90%; margin: 20px 0; line-height: 1.7; }
-    #restart-button { padding: 15px 40px; font-size: 1.2em; background-color: var(--gold-color); color: #111; border: none; border-radius: 5px; cursor: pointer; }
-
-    /* Responsive Design for Mobile */
-    @media (max-width: 768px) {
-        .container { flex-direction: column; height: auto; min-height: 100vh;}
-        .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; justify-content: space-around; border-right: none; border-bottom: 1px solid var(--gold-color); box-sizing: border-box; }
-        .assets, .message-board { width: 100%; box-sizing: border-box; }
-        .message-board { margin-top: 10px; height: 200px; }
-        .asset-item { flex-direction: column; align-items: center; text-align: center; padding: 10px; }
-        .asset-item span:first-child { margin-bottom: 5px; }
-        .asset-item .actions { margin-top: 5px; }
-        .main-content { padding: 10px; flex-grow: 1; }
-        .game-nav button { font-size: 14px; padding: 10px 2px; }
-        .game-view { padding: 15px; }
-        .game-view h1 { font-size: 1.5em; }
-        .controls input { width: 100px; }
-        .controls button { padding: 10px 15px; font-size: 14px; }
-        .card { width: 45px; height: 70px; font-size: 18px; }
-        #final-message h1 { font-size: 2.5em; }
-        #final-message p { font-size: 1em; }
-    }
-    
-    /* Mobile Landscape */
-    @media (max-height: 500px) and (orientation: landscape) {
-        .container { flex-direction: row; }
-        .sidebar { width: 220px; justify-content: flex-start; }
-        .assets, .message-board { width: 100%; }
-        .message-board { height: 150px; }
-        .asset-item { flex-direction: row; justify-content: space-between; }
-        .asset-item span:first-child { margin-bottom: 0; }
-        .asset-item .actions { margin-top: 0; }
-        .main-content { flex-grow: 1; padding: 10px;}
-        .game-view h1 { font-size: 1.2em; margin-bottom: 10px; }
-        .card { width: 40px; height: 60px; font-size: 16px; margin: 2px;}
-        .hand-area { min-height: 70px; }
-        .controls { margin-top: 10px; }
-        .controls input { width: 80px; padding: 8px; font-size: 12px;}
-        .controls button { padding: 8px 12px; font-size: 12px; }
-    }
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>粒子跑酷-WWZ</title>
+    <style>
+        :root {
+            --ui-glow: #0ff; --danger-glow: #f00; --skill1-color: #f90;
+            --skill2-color: #90f; --skill-ultimate-color: #ffd700;
+        }
+        body, html {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background-color: #000; font-family: 'Segoe UI', Tahoma, sans-serif; color: white;
+        }
+        canvas { display: block; position: absolute; top: 0; left: 0; }
+        .text-glow { text-shadow: 0 0 5px var(--ui-glow), 0 0 10px var(--ui-glow); }
+        .hidden { display: none !important; }
+        #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; pointer-events: none; padding: 20px; box-sizing: border-box; }
+        #score { font-size: 2em; font-weight: bold; }
+        .screen-overlay { display: none; flex-direction: column; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); pointer-events: auto; text-align: center; }
+        .screen-overlay h1 { font-size: 3em; margin: 0; }
+        .screen-overlay p { font-size: 1.2em; margin-top: 10px; max-width: 90%; line-height: 1.6; }
+        #start-screen { display: flex; }
+        #game-over-screen h1 { color: #ff4d4d; text-shadow: 0 0 10px var(--danger-glow); }
+        #settings-button { position: absolute; top: 20px; right: 20px; font-size: 2em; cursor: pointer; z-index: 100; pointer-events: auto; }
+        #settings-screen .settings-toggle { margin-top: 30px; font-size: 1.5em; display: flex; align-items: center; }
+        #settings-screen input[type="checkbox"] { width: 25px; height: 25px; margin-right: 15px; }
+        #settings-screen button { margin-top: 40px; font-size: 1.2em; padding: 10px 20px; background: #333; border: 2px solid var(--ui-glow); color: white; border-radius: 8px; cursor: pointer; }
+        #touch-controls { display: none; position: absolute; bottom: 0; left: 0; width: 100%; height: 25%; pointer-events: none; box-sizing: border-box; padding: 20px; justify-content: space-between; align-items: stretch; -webkit-user-select: none; user-select: none; }
+        .control-section { width: 48%; display: flex; pointer-events: auto; }
+        .control-section.skills { justify-content: flex-end; }
+        .control-button { flex-grow: 1; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 15px; margin: 0 5px; display: flex; justify-content: center; align-items: center; font-size: 2em; color: white; position: relative; overflow: hidden; font-weight: bold; }
+        .cooldown-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background-color: rgba(0, 0, 0, 0.5); transition: height 0.1s linear; }
+        #skill-laser-btn { border-color: var(--skill1-color); }
+        #skill-vortex-btn { border-color: var(--skill2-color); }
+        #skill-ultimate-btn { border-color: var(--skill-ultimate-color); text-shadow: 0 0 8px var(--skill-ultimate-color); font-size: 1.8em;}
+    </style>
 </head>
 <body>
-
-<!-- Audio Files -->
-<audio id="sound-bet" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
-<audio id="sound-win" src="https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3" preload="auto"></audio>
-<audio id="sound-lose" src="https://www.soundjay.com/misc/sounds/remove-file-1.mp3" preload="auto"></audio>
-<audio id="sound-card" src="https://www.soundjay.com/misc/sounds/page-flip-02.mp3" preload="auto"></audio>
-<audio id="sound-family-leave" src="https://www.soundjay.com/human/sounds/woman-scream-01.mp3" preload="auto"></audio>
-
-<div class="container">
-    <div class="sidebar">
-        <div class="assets">
-            <h2>我的所有</h2>
-            <div id="cash-item" class="asset-item"><span>存款</span><span id="cash" class="value">80000</span></div>
-            <div id="car-item" class="asset-item">
-                <span>婚车 (20万)</span>
-                <div class="actions">
-                    <button id="mortgage-car" class="loan-btn">抵押 (贷12万)</button>
-                    <button id="sell-car">变卖</button>
-                </div>
-            </div>
-            <div id="house-item" class="asset-item">
-                <span>父母的养老房 (80万)</span>
-                <div class="actions">
-                    <button id="mortgage-house" class="loan-btn">抵押 (贷50万)</button>
-                    <button id="sell-house">变卖</button>
-                </div>
-            </div>
-            <div id="father-item" class="asset-item"><span>父亲的健康</span><span id="father-status" class="value">安康</span></div>
-            <div id="mother-item" class="asset-item"><span>母亲的微笑</span><span id="mother-status" class="value">慈爱</span></div>
-        </div>
-        <div class="message-board">
-            <h3>深渊回响</h3>
-            <ul id="messages"></ul>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="game-nav">
-            <button class="game-tab active" onclick="switchGame('blackjack')">决战21点</button>
-            <button class="game-tab" onclick="switchGame('slots')">深渊老虎机</button>
-            <button class="game-tab" onclick="switchGame('crash')">疯狂Crash</button>
-        </div>
-
-        <!-- Blackjack Game -->
-        <div id="blackjack-game" class="game-view active">
-            <h1>幻觉的掌控</h1>
-            <div class="table">
-                <div>
-                    <h3>庄家 (<span id="dealer-score">0</span>)</h3>
-                    <div class="cards" id="dealer-cards"></div>
-                </div>
-                <div>
-                    <h3>张龙昊 (<span id="player-score">0</span>)</h3>
-                    <div class="cards" id="player-cards"></div>
-                </div>
-            </div>
-            <div class="controls" id="blackjack-controls">
-                <input type="number" id="blackjack-bet" value="1000" min="100" step="100">
-                <button id="blackjack-deal">发牌</button>
-                <button id="blackjack-hit" disabled>要牌</button>
-                <button id="blackjack-stand" disabled>停牌</button>
-            </div>
-        </div>
-        
-        <div id="slots-game" class="game-view" style="justify-content:center;"><h1>深渊老虎机</h1><p>未知的黑暗，正等待吞噬你的理智。</p></div>
-        <div id="crash-game" class="game-view" style="justify-content:center;"><h1>疯狂Crash</h1><p>那根飞速上涨的线，就是你生命的倒计时。</p></div>
-
-    </div>
-</div>
-
-<div id="final-message">
-    <h1>一无所有，万念俱灰</h1>
-    <p>张龙昊，一切都结束了。婚车没了，父母一生的心血——那套养老房，也被你输掉了。电话里，母亲的哭声和父亲倒地的声音混在一起，那是你亲手制造的人间惨剧。</p>
-    <p>你不但毁了自己，更毁了那个世界上最爱你的人。赌博的终点不是财富，而是无法偿还的血债和永世的悔恨。</p>
-    <p><strong>警钟长鸣，远离赌博，珍惜家人。</strong></p>
-    <button id="restart-button">在悔恨中重来</button>
-</div>
+    <canvas id="game-canvas"></canvas>
+    <div id="ui-container"><div id="score" class="text-glow">分数: 0</div></div>
+    <div id="start-screen" class="screen-overlay"><div id="settings-button" class="text-glow">⚙️</div><h1 class="text-glow">粒子跑酷 V12</h1><p><b>极限速度，超远飞跃!</b><br><br><b>桌面端:</b> [←][→]移动, [↑/W/空格]跳跃, [J]激光, [K]漩涡, [L]终极技能<br><b>移动端:</b> 滑动或使用屏幕按钮(可在设置中开启)<br><br>点击或按任意键开始</p></div>
+    <div id="settings-screen" class="screen-overlay"><h1 class="text-glow">设置</h1><div class="settings-toggle"><input type="checkbox" id="on-screen-controls-toggle"><label for="on-screen-controls-toggle">开启屏幕按钮</label></div><button id="close-settings-button">返回</button></div>
+    <div id="game-over-screen" class="screen-overlay"><h1>游戏结束</h1><p id="final-score"></p><p>点击或按任意键重新开始</p></div>
+    <div id="touch-controls"><div class="control-section movement"><div id="move-left-btn" class="control-button">←</div><div id="jump-btn" class="control-button">↑</div><div id="move-right-btn" class="control-button">→</div></div><div class="control-section skills"><div id="skill-laser-btn" class="control-button">J<div class="cooldown-overlay"></div></div><div id="skill-vortex-btn" class="control-button">K<div class="cooldown-overlay"></div></div><div id="skill-ultimate-btn" class="control-button hidden">L<div class="cooldown-overlay"></div></div></div></div>
 
 <script>
-// --- State Management ---
-let state = {
-    cash: 80000,
-    house: { value: 800000, sold: false, loan: 0, loanAmount: 500000 },
-    car: { value: 200000, sold: false, loan: 0, loanAmount: 120000 },
-    family: { father: '安康', mother: '慈爱', stage: 0 },
-    dailyExpenseInterval: null,
+// =================================
+// Setup
+// =================================
+const canvas = document.getElementById('game-canvas'), ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score'), startScreen = document.getElementById('start-screen'), gameOverScreen = document.getElementById('game-over-screen'), finalScoreEl = document.getElementById('final-score'), settingsButton = document.getElementById('settings-button'), settingsScreen = document.getElementById('settings-screen'), closeSettingsButton = document.getElementById('close-settings-button'), onScreenControlsToggle = document.getElementById('on-screen-controls-toggle'), touchControlsContainer = document.getElementById('touch-controls'), ultimateSkillBtn = document.getElementById('skill-ultimate-btn');
+
+let width, height, centerX, centerY;
+let gameState = 'start', gameSpeed, score;
+
+const camera = { x: 0, y: 150, z: -400, fov: 350, lerpFactor: 0.05 };
+let particleCollections = { player: [], track: [], effects: [], background: [] };
+let activeObstacles = [];
+
+// 【核心改动】 数值调整
+const JUMP_FORCE = 22;
+const GRAVITY = -0.85;
+const JUMP_FORWARD_IMPULSE = 35; // **大幅增加前冲动力**
+const AIR_DRAG = 0.98;
+const BASE_GAME_SPEED = 4.5;     // **加快基础速度**
+const BASE_OBSTACLE_INTERVAL = 600; // **大幅减少初始障碍物**
+
+const LANE_WIDTH = 120;
+const OBSTACLE_SPAWN_Z = 2500;
+const ULTIMATE_UNLOCK_SCORE = 1500;
+
+const player = {
+    lane: 0, targetX: 0, currentX: 0, y: 0, baseY: 0,
+    velocityY: 0, velocityZ: 0, z: 0,
+    width: 50, height: 80, isJumping: false, lerpFactor: 0.25, hitRadius: 40,
+    skills: {
+        laser: { name: 'laser', key: 'j', cooldown: 0, maxCooldown: 180, active: false, duration: 0, maxDuration: 15, hue: 30 },
+        vortex: { name: 'vortex', key: 'k', cooldown: 0, maxCooldown: 500, active: false, duration: 0, maxDuration: 90, hue: 280 },
+        ultimate: { name: 'ultimate', key: 'l', cooldown: 0, maxCooldown: 1800, active: false, duration: 0, maxDuration:10, unlocked: false, hue: 50 }
+    }
 };
-// Game states
-let blackjack = { deck: [], playerHand: [], dealerHand: [], bet: 0, inProgress: false };
 
-// --- DOM & Sound Elements ---
-const cashEl = document.getElementById('cash');
-const messagesEl = document.getElementById('messages');
-const sounds = {
-    bet: document.getElementById('sound-bet'),
-    win: document.getElementById('sound-win'),
-    lose: document.getElementById('sound-lose'),
-    card: document.getElementById('sound-card'),
-    familyLeave: document.getElementById('sound-family-leave')
-};
-function playSound(sound) { try { sounds[sound]?.play(); } catch (e) { console.warn("Audio play failed:", e)} }
+let useOnScreenControls = false;
+const random = (min, max) => Math.random() * (max - min) + min;
 
-// --- Utility Functions ---
-function switchGame(gameId) {
-    document.querySelectorAll('.game-view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(`${gameId}-game`).classList.add('active');
-    document.querySelector(`.game-tab[onclick="switchGame('${gameId}')"]`).classList.add('active');
-}
-function addMessage(text, type = '') {
-    const li = document.createElement('li');
-    li.innerHTML = text; // Use innerHTML to allow bold tags
-    if (type) li.classList.add(type);
-    messagesEl.prepend(li);
-    if (messagesEl.children.length > 20) messagesEl.removeChild(messagesEl.lastChild);
+// ===================================
+// Perspective & Particle System
+// ===================================
+function project3D(x, y, z) {
+    const dx = x - camera.x, dy = y - camera.y, dz = z - camera.z;
+    if (dz <= 0.1) return null;
+    const scale = camera.fov / dz;
+    return { x: centerX + dx * scale, y: centerY - dy * scale, scale: scale, dz: dz };
 }
 
-// --- Asset & Consequence Logic ---
-function updateAssets() {
-    cashEl.textContent = state.cash.toLocaleString();
-    const updateItem = (item, itemName, itemState) => {
-        const itemEl = document.getElementById(`${itemName}-item`);
-        const actionsEl = itemEl.querySelector('.actions');
-        if (itemState.sold) {
-            itemEl.className = 'asset-item sold-out';
-            if (actionsEl) actionsEl.innerHTML = `<span class="sold">已变卖</span>`;
-        } else if (itemState.loan > 0) {
-            itemEl.className = 'asset-item in-loan';
-            if (actionsEl) actionsEl.innerHTML = `<span class="loan-text">已抵押 (欠${itemState.loan.toLocaleString()})</span>`;
-        }
-    };
-    updateItem(state.house, 'house', state.house);
-    updateItem(state.car, 'car', state.car);
-
-    document.getElementById('father-status').textContent = state.family.father;
-    document.getElementById('mother-status').textContent = state.family.mother;
-    if(state.family.father !== '安康') document.getElementById('father-item').classList.add('left');
-    if(state.family.mother !== '慈爱') document.getElementById('mother-item').classList.add('left');
-
-    checkConsequences();
+class Particle {
+     constructor(x, y, z, options = {}) { this.x = x; this.y = y; this.z = z; this.ox = options.ox ?? x; this.oy = options.oy ?? y; this.oz = options.oz ?? z; this.size = options.size || 2; this.baseHue = options.baseHue || 200; this.lightness = options.lightness || 60; this.alpha = options.alpha || 1; this.life = options.life || Infinity; this.vx = options.vx || 0; this.vy = options.vy || 0; this.vz = options.vz || 0; this.gravity = options.gravity || 0; this.particleType = options.particleType || 'default'; if (this.particleType === 'obstacleSphere') { const mag = Math.sqrt(this.ox * this.ox + this.oy * this.oy + this.oz * this.oz); if (mag > 0) { this.normalX = this.ox / mag; this.normalY = this.oy / mag; this.normalZ = this.oz / mag; } else { this.normalX = 0; this.normalY = 0; this.normalZ = 0; } } }
+    update(parentX, parentY, parentZ) { if (this.life !== Infinity) { this.x += this.vx; this.y += this.vy; this.z += this.vz; this.vy += this.gravity; this.life--; this.alpha = Math.max(0, this.life / 60); } if (parentX !== undefined) { this.x = parentX + this.ox; this.y = parentY + this.oy; this.z = parentZ + this.oz; } }
+    draw() { const p = project3D(this.x, this.y, this.z); if (!p) return; if (this.particleType === 'obstacleSphere') { const viewX = camera.x - this.x, viewY = camera.y - this.y, viewZ = camera.z - this.z; const dotProduct = this.normalX * viewX + this.normalY * viewY + this.normalZ * viewZ; if (dotProduct > 0) return; } if (p.x < -p.scale * this.size || p.x > width + p.scale * this.size || p.y < -p.scale * this.size || p.y > height + p.scale * this.size) return; let finalFillStyle = `hsla(${this.baseHue}, 100%, ${this.lightness}%, ${this.alpha * p.scale})`; let finalSize = this.size * p.scale; if (this.particleType === 'obstacleSphere') { const dotProduct = -this.normalZ; if (dotProduct < 0.15 && dotProduct > -0.5) { finalFillStyle = `hsla(0, 0%, ${10 + dotProduct * 20}%, ${0.9 * p.scale})`; finalSize *= 1.5; } else if (dotProduct >= 0.15) { finalFillStyle = `hsla(${this.baseHue}, 100%, ${40 + 20 * dotProduct}%, ${this.alpha * p.scale})`; } else { finalFillStyle = `hsla(0, 100%, 10%, ${0.5 * p.scale})`; } } ctx.beginPath(); ctx.fillStyle = finalFillStyle; ctx.arc(p.x, p.y, Math.max(0.2, finalSize), 0, Math.PI * 2); ctx.fill(); }
 }
 
-function checkConsequences() {
-    const totalValue = state.cash + (state.house.sold ? 0 : state.house.value) + (state.car.sold ? 0 : state.car.value);
-    
-    // Family status checks based on story stages
-    if (state.family.stage === 0 && state.car.loan > 0) {
-        state.family.stage = 1;
-        addMessage('你对父母谎称生意周转，抵押了准备结婚用的车。母亲的眼神里第一次有了忧虑。', 'warning');
+// ===================================
+// Game Object & Effect Creation
+// ===================================
+class Obstacle {
+    constructor(x, y, z, radius, type) { this.x = x; this.y = y; this.z = z; this.radius = radius; this.type = type; this.particles = []; this.isAlive = true; }
+    update() {
+        this.z -= gameSpeed;
+        for (const p of this.particles) { p.update(this.x, this.y, this.z); }
     }
-    if (state.family.stage === 1 && totalValue < 800000) { // Lost car value
-        state.family.stage = 2;
-        state.family.mother = '忧虑';
-        addMessage('车贷的窟窿没补上，反而越陷越深。你开始躲着父母的电话，他们的关心让你感到无比烦躁。', 'warning');
-        updateAssets();
+    destroy() { if (!this.isAlive) return; this.isAlive = false; this.particles.forEach(p => destroyObstacleParticle(p, p.baseHue)); this.particles = []; }
+}
+function createSphereObstacle() {
+    const lane = Math.floor(random(-1, 2)); const radius = 60;
+    const isAirborne = Math.random() > 0.4; const type = isAirborne ? 'air' : 'ground';
+    const sphereCenterY = isAirborne ? radius + 140 : radius;
+    const obstacle = new Obstacle(lane * LANE_WIDTH, sphereCenterY, OBSTACLE_SPAWN_Z, radius, type);
+    const particleCount = 150; const phi = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < particleCount; i++) {
+        const y_norm = 1 - (i / (particleCount - 1)) * 2; const r_norm = Math.sqrt(1 - y_norm * y_norm); const theta = phi * i;
+        const p_ox = Math.cos(theta) * r_norm * radius; const p_oy = y_norm * radius; const p_oz = Math.sin(theta) * r_norm * radius;
+        const particle = new Particle(obstacle.x + p_ox, obstacle.y + p_oy, obstacle.z + p_oz, { ox: p_ox, oy: p_oy, oz: p_oz, size: random(3, 5), baseHue: 0, alpha: random(0.8, 1), particleType: 'obstacleSphere' });
+        obstacle.particles.push(particle);
     }
-    if (state.family.stage === 2 && state.house.loan > 0) {
-        state.family.stage = 3;
-        state.family.mother = '终日流泪';
-        addMessage('你偷走了房产证，抵押了父母唯一的养老房。拿到钱的那一刻，你告诉自己，这是最后一次，一定要翻本！', 'danger');
-        updateAssets();
-    }
-    if (state.family.stage === 3 && state.car.sold) {
-        state.family.stage = 4;
-        addMessage('为了还抵押车的利息，你不得不变卖了它。你失去的不仅是代步工具，更是对未婚妻的承诺。婚约，也到此为止了。', 'danger');
-    }
-     if (state.family.stage === 4 && totalValue < 50000) {
-        state.family.stage = 5;
-        state.family.father = '气急攻心';
-        state.family.mother = '肝肠寸断';
-        playSound('familyLeave');
-        addMessage('<b>家破人亡</b>：债主找上了门，父母才知晓一切。老实的父亲被你气得突发心梗，母亲哭晕在医院走廊。你，成了这个家的罪人。', 'danger');
-        updateAssets();
-    }
-
-    if (state.cash <= 0 && state.car.sold && state.house.sold) {
-        endGame();
-    }
+    return obstacle;
 }
 
-function applyLifeCost() {
-    const cost = 2000;
-    if (state.cash >= cost) {
-        state.cash -= cost;
-        addMessage(`日常开销、高额利息... 存款减少 ${cost.toLocaleString()}。你感到喘不过气。`);
-        updateAssets();
-    } else if (state.cash > 0) {
-        state.cash = 0;
-        addMessage(`你的钱连利息都还不起了！电话开始响个不停。`, 'danger');
-        updateAssets();
+// ... other creation functions are unchanged ...
+function createPlayer() { particleCollections.player = []; for (let i = 0; i < 80; i++) { const x = random(-player.width/2, player.width/2) * 0.7; const y = random(0, player.height); particleCollections.player.push(new Particle(x, y, player.z, {size: random(2, 4), baseHue: 180})); } }
+function createTrack() { particleCollections.track = []; for (let i = 0; i < 200; i++) { const ls = Math.random() > 0.5 ? 1 : -1; particleCollections.track.push(new Particle((LANE_WIDTH * 1.5 + random(0, 30)) * ls, 0, random(camera.z, OBSTACLE_SPAWN_Z), { size: 3, baseHue: 240, alpha: 0.7 })); } }
+function createStarfield() { for (let i=0; i<100; i++) { particleCollections.background.push(new Particle(random(-width, width), random(-height, height), random(0, OBSTACLE_SPAWN_Z), {size: random(0.5, 1.5), baseHue: 240, lightness: 80, alpha: random(0.5, 1)})); } }
+function createLaneChangeEffect(fromX) { for(let i=0; i<10; i++) { particleCollections.effects.push(new Particle(fromX, player.y + 20, player.z, {life: 20, vx: random(-2, 2), vy: random(-1, 1), vz: random(2, 5), baseHue: 180, lightness: 70})); } }
+function createRunningTrail() { if(Math.random() > 0.4) return; particleCollections.effects.push(new Particle(player.currentX, player.baseY, player.z, {life: 15, vy: random(0.5, 2), baseHue: 200, lightness: 60, size: random(1,2)})); }
+function createActivationFlare(hue) { for(let i=0; i<30; i++) { const angle = random(0, 2*Math.PI); const speed = random(2, 8); particleCollections.effects.push(new Particle(player.currentX, player.y + 40, player.z, {life: 25, vx: Math.cos(angle) * speed, vy: random(-2,2), vz: Math.sin(angle) * speed, baseHue: hue, lightness: 70, size: random(1,3)})); } }
+
+// ===================================
+// Game Logic & Update Functions
+// ===================================
+function updateCamera() { camera.z = player.z - 400; camera.x += (player.currentX - camera.x) * camera.lerpFactor; }
+function updatePlayer() {
+    let fromX = player.currentX;
+    player.targetX = player.lane * LANE_WIDTH; player.currentX += (player.targetX - player.currentX) * player.lerpFactor;
+    if (Math.abs(fromX - player.currentX) > 2) { createLaneChangeEffect(fromX); }
+    if (player.isJumping) {
+        player.velocityY += GRAVITY; player.y += player.velocityY;
+        player.velocityZ *= AIR_DRAG; player.z += player.velocityZ;
+        if (player.y <= player.baseY) { player.y = player.baseY; player.velocityY = 0; player.velocityZ = 0; player.isJumping = false; }
+    } else {
+        createRunningTrail();
+        player.z += (0 - player.z) * 0.1;
     }
-}
-
-// Mortgage and Sell logic
-document.getElementById('mortgage-car').addEventListener('click', () => {
-    if (state.car.sold || state.car.loan > 0) return;
-    state.car.loan = state.car.loanAmount;
-    state.cash += state.car.loanAmount;
-    playSound('win');
-    addMessage(`你抵押了婚车，贷到 ${state.car.loanAmount.toLocaleString()}。你骗自己说这是“暂时的”，赢了就赎回来。`, 'info');
-    updateAssets();
-});
-document.getElementById('sell-car').addEventListener('click', () => {
-    if (state.car.sold) return;
-    const sellValue = state.car.value - state.car.loan;
-    state.cash += sellValue;
-    state.car.sold = true;
-    playSound('win');
-    addMessage(`你变卖了婚车，还掉贷款后到手 ${sellValue.toLocaleString()}。你和她的未来，也一起卖掉了。`, 'warning');
-    updateAssets();
-});
-document.getElementById('mortgage-house').addEventListener('click', () => {
-    if (state.house.sold || state.house.loan > 0) return;
-    state.house.loan = state.house.loanAmount;
-    state.cash += state.house.loanAmount;
-    playSound('win');
-    addMessage(`你抵押了父母的养老房，换来 ${state.house.loanAmount.toLocaleString()}。你已经不是人，是个畜生。`, 'danger');
-    updateAssets();
-});
-document.getElementById('sell-house').addEventListener('click', () => {
-    if (state.house.sold) return;
-    const sellValue = state.house.value - state.house.loan;
-    state.cash += sellValue;
-    state.house.sold = true;
-    playSound('win');
-    addMessage(`<b>无家可归</b>：你变卖了父母最后的栖身之所，到手 ${sellValue.toLocaleString()}。从今往后，你不仅是赌徒，还是不孝子。`, 'danger');
-    updateAssets();
-});
-
-// --- Blackjack Game Logic ---
-const suits = {'♠': 'black', '♥': 'red', '♦': 'red', '♣': 'black'};
-const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-
-function createDeck() {
-    blackjack.deck = [];
-    for (let suit in suits) { for (let value of values) { blackjack.deck.push({suit, value}); } }
-    blackjack.deck.sort(() => Math.random() - 0.5);
-}
-function getCardValue(card) {
-    if (['J','Q','K'].includes(card.value)) return 10;
-    if (card.value === 'A') return 11;
-    return parseInt(card.value);
-}
-function calculateScore(hand) {
-    let score = hand.reduce((sum, card) => sum + getCardValue(card), 0);
-    let aces = hand.filter(card => card.value === 'A').length;
-    while (score > 21 && aces > 0) { score -= 10; aces--; }
-    return score;
-}
-function renderCard(card, isDealer, isHidden) {
-    playSound('card');
-    const cardEl = document.createElement('div');
-    cardEl.className = 'card back';
-    if (isHidden) {
-        setTimeout(() => cardEl.classList.add('flipped'), 100);
-        return cardEl;
-    }
-    const value = card.value; const suitSymbol = card.suit;
-    cardEl.innerHTML = `
-        <div class="card-face front"></div>
-        <div class="card-face back ${suits[suitSymbol]}">
-            <span class="suit suit-top">${suitSymbol}</span>
-            <span>${value}</span>
-            <span class="suit suit-bottom">${suitSymbol}</span>
-        </div>
-    `;
-    setTimeout(() => cardEl.classList.add('flipped'), 100);
-    return cardEl;
-}
-function renderHands(showDealerCard = false) {
-    const playerArea = document.getElementById('player-cards');
-    const dealerArea = document.getElementById('dealer-cards');
-    playerArea.innerHTML = ''; dealerArea.innerHTML = '';
-    blackjack.playerHand.forEach(card => playerArea.appendChild(renderCard(card, false, false)));
-    blackjack.dealerHand.forEach((card, index) => {
-        dealerArea.appendChild(renderCard(card, true, index === 0 && !showDealerCard));
+    const vortexActive = player.skills.vortex.active;
+    particleCollections.player.forEach(p => {
+       const stretch = player.isJumping ? 1 + Math.abs(player.velocityY) * 0.02 : 1; const spinSpeed = vortexActive ? 0.2 : 0.005; const vortexPull = vortexActive ? 1.5 : 1;
+       p.x = player.currentX + (p.ox + Math.sin(Date.now() * spinSpeed + p.oy) * 3) * vortexPull;
+       p.y = player.y + p.oy * stretch; p.z = player.z;
+       p.hue = vortexActive ? random(270, 330) : 180 + Math.sin(Date.now() * 0.002 + p.ox) * 15;
     });
-    document.getElementById('player-score').textContent = calculateScore(blackjack.playerHand);
-    if(showDealerCard) {
-        document.getElementById('dealer-score').textContent = calculateScore(blackjack.dealerHand);
-    } else {
-        document.getElementById('dealer-score').textContent = blackjack.dealerHand.length > 1 ? getCardValue(blackjack.dealerHand[1]) : 0;
+}
+function updateWorld() {
+    const maxSpeed = 12;
+    gameSpeed = Math.min(maxSpeed, BASE_GAME_SPEED + score / 3000);
+    const minInterval = 60;
+    const scoreFactor = 0.04;
+    let obstacleSpawnInterval = Math.max(minInterval, BASE_OBSTACLE_INTERVAL - score * scoreFactor);
+    
+    activeObstacles.forEach(obs => obs.update());
+    activeObstacles = activeObstacles.filter(obs => obs.isAlive && obs.z > camera.z);
+
+    particleCollections.track.forEach(p => { p.z -= gameSpeed; });
+    particleCollections.track = particleCollections.track.filter(p => p.z > camera.z);
+    
+    particleCollections.background.forEach(p => { p.z -= gameSpeed * 0.1; if(p.z < camera.z) p.z = player.z + OBSTACLE_SPAWN_Z; });
+    particleCollections.effects.forEach(p => { p.z -= gameSpeed; p.update(); });
+    particleCollections.effects = particleCollections.effects.filter(p => p.life > 0);
+
+    while(particleCollections.track.length < 200) { const ls = Math.random() > 0.5 ? 1 : -1; particleCollections.track.push(new Particle((LANE_WIDTH*1.5 + random(0, 30)) * ls, 0, player.z + OBSTACLE_SPAWN_Z, {size: 3, baseHue: 240, alpha: 0.7}));}
+    obstacleSpawnTimer -= 1;
+    if (obstacleSpawnTimer <= 0) {
+        const newObs = createSphereObstacle();
+        newObs.z += player.z;
+        activeObstacles.push(newObs);
+        obstacleSpawnTimer = obstacleSpawnInterval;
     }
 }
-function blackjackPlaceBet(amount) {
-    if (amount <= 0 || !Number.isInteger(amount)) { addMessage('醒醒吧，别乱来！', 'warning'); return false; }
-    if (state.cash < amount) { addMessage('你没有那么多钱了！想动歪心思吗？', 'danger'); return false; }
-    state.cash -= amount;
-    blackjack.bet = amount;
-    playSound('bet');
-    addMessage(`押上 ${amount.toLocaleString()}，你觉得这次能赢回所有...`);
-    updateAssets();
-    return true;
-}
-document.getElementById('blackjack-deal').addEventListener('click', () => {
-    const betAmount = parseInt(document.getElementById('blackjack-bet').value);
-    if (!blackjackPlaceBet(betAmount)) return;
-    blackjack.inProgress = true;
-    createDeck();
-    blackjack.playerHand = [blackjack.deck.pop(), blackjack.deck.pop()];
-    blackjack.dealerHand = [blackjack.deck.pop(), blackjack.deck.pop()];
-    document.getElementById('blackjack-deal').disabled = true;
-    document.getElementById('blackjack-hit').disabled = false;
-    document.getElementById('blackjack-stand').disabled = false;
-    renderHands();
-    if (calculateScore(blackjack.playerHand) === 21) {
-        endBlackjackRound(true);
-    }
-});
-document.getElementById('blackjack-hit').addEventListener('click', () => {
-    blackjack.playerHand.push(blackjack.deck.pop());
-    renderHands();
-    if (calculateScore(blackjack.playerHand) > 21) {
-        addMessage("<b>爆了！</b>贪婪让你再次坠入深渊。", 'danger');
-        endBlackjackRound(false, 'lose');
-    }
-});
-document.getElementById('blackjack-stand').addEventListener('click', () => {
-    document.getElementById('blackjack-hit').disabled = true;
-    document.getElementById('blackjack-stand').disabled = true;
-    dealerTurn();
-});
-function dealerTurn() {
-    renderHands(true);
-    let dealerScore = calculateScore(blackjack.dealerHand);
-    if (dealerScore > 21) { endBlackjackRound(false, 'win', '庄家爆了！你逃过一劫。'); return; }
-    if (dealerScore >= 17) { endBlackjackRound(false); return; }
-    setTimeout(() => { blackjack.dealerHand.push(blackjack.deck.pop()); dealerTurn(); }, 1000);
-}
-function endBlackjackRound(isPlayerBlackjack = false, forceResult = null, customMessage = '') {
-    renderHands(true);
-    let resultMessage = ''; let winAmount = 0;
-    if (isPlayerBlackjack) {
-        winAmount = blackjack.bet * 2.5;
-        resultMessage = `<b>Blackjack!</b> 命运女神的微笑？你赢了 ${winAmount.toLocaleString()}`;
-        playSound('win');
-    } else {
-        const playerScore = calculateScore(blackjack.playerHand); const dealerScore = calculateScore(blackjack.dealerHand);
-        let outcome;
-        if (forceResult) { outcome = forceResult; }
-        else {
-            if (playerScore > 21) outcome = 'lose';
-            else if (dealerScore > 21) outcome = 'win';
-            else if (playerScore > dealerScore) outcome = 'win';
-            else if (playerScore < dealerScore) outcome = 'lose';
-            else outcome = 'push';
-        }
-        if (outcome === 'win') {
-            winAmount = blackjack.bet * 2;
-            resultMessage = customMessage || `你赢了。赢回 ${winAmount.toLocaleString()}。这点钱，够还利息吗？`;
-            playSound('win');
-        } else if (outcome === 'lose') {
-            winAmount = 0;
-            resultMessage = `你输了。又输掉了 ${blackjack.bet.toLocaleString()}。离地狱又近了一步。`;
-            playSound('lose');
-        } else {
-            winAmount = blackjack.bet;
-            resultMessage = `平局。资金返还。没有输，但也没有赢。你感到一阵后怕。`;
+const handleJump = () => { if (!player.isJumping && gameState === 'playing') { player.isJumping = true; player.velocityY = JUMP_FORCE; player.velocityZ = JUMP_FORWARD_IMPULSE; } };
+
+// ===== Collision, Skills, and other logic (Unchanged but included for completeness) =====
+function checkCollision() {
+    const playerHead = player.y + player.height; const playerFeet = player.y;
+    for (const obs of activeObstacles) {
+        if (!obs.isAlive) continue;
+        if (Math.abs(obs.z - player.z) < obs.radius + player.width / 2) {
+            const closestX = Math.max(player.currentX - player.width / 2, Math.min(obs.x, player.currentX + player.width / 2));
+            const horizontalDistSq = (closestX - obs.x) * (closestX - obs.x);
+            if (horizontalDistSq < obs.radius * obs.radius) {
+                if (obs.type === 'ground' && player.y < obs.radius) { gameOver(); return; }
+                if (obs.type === 'air' && Math.abs(player.y + player.height/2 - obs.y) < obs.radius + player.height/2) { gameOver(); return; }
+            }
         }
     }
-    addMessage(resultMessage, winAmount > blackjack.bet ? 'success' : (winAmount === 0 ? 'danger' : ''));
-    state.cash += winAmount;
-    setTimeout(() => {
-        blackjack.inProgress = false;
-        document.getElementById('blackjack-deal').disabled = false;
-        document.getElementById('blackjack-hit').disabled = true;
-        document.getElementById('blackjack-stand').disabled = true;
-        updateAssets();
-    }, 1500);
 }
+function gameOver() { if (gameState === 'gameOver') return; gameState = 'gameOver'; activeObstacles.forEach(obs => obs.destroy()); createExplosion(player.currentX, player.y, player.z, 180); particleCollections.player = []; finalScoreEl.textContent = `最终分数: ${Math.floor(score)}`; gameOverScreen.style.display = 'flex'; }
+function checkAndUnlockUltimate() { if (score >= ULTIMATE_UNLOCK_SCORE && !player.skills.ultimate.unlocked) { player.skills.ultimate.unlocked = true; ultimateSkillBtn.classList.remove('hidden'); createShockwaveEffect(280, 80); } }
+function updateSkills() { for(const skill of Object.values(player.skills)) { if (skill.cooldown < skill.maxCooldown) { skill.cooldown++; } if (skill.active) { skill.duration--; if (skill.duration <= 0) skill.active = false; } } }
+function checkSkillEffects() { if (player.skills.laser.active) { activeObstacles.forEach(obs => { const ol = Math.round(obs.x / LANE_WIDTH); if(ol === player.lane && obs.z > player.z && obs.z < player.z + OBSTACLE_SPAWN_Z * 0.8) { obs.destroy(); } }); } if (player.skills.vortex.active) { activeObstacles.forEach(obs => { const dz = obs.z - player.z; if(dz > 0 && dz < 1000) { obs.x += (player.currentX - obs.x) * 0.01; obs.y += (player.y - obs.y) * 0.01; if(dz < 50 && Math.abs(obs.x - player.currentX) < 50) { obs.destroy(); } } }); } }
+function activateSkill(skillName) { if (gameState !== 'playing') return; const s = player.skills[skillName]; if (s.cooldown >= s.maxCooldown && (!s.hasOwnProperty('unlocked') || s.unlocked)) { s.active = true; s.duration = s.maxDuration; s.cooldown = 0; createActivationFlare(s.hue); if (skillName === 'ultimate') { [...activeObstacles].forEach(obs => obs.destroy()); createShockwaveEffect(50, 60); } } }
+function createShockwaveEffect(hue, l){ for(let i=0; i<360; i+=5) { const r = i * Math.PI / 180; const s = 15; particleCollections.effects.push(new Particle(player.currentX, player.y + 40, player.z, { life: 60, vx: Math.cos(r) * s, vz: Math.sin(r) * s, vy: random(-1,1), g: 0, size: random(3,6), baseHue: hue, lightness: l })); } }
+function destroyObstacleParticle(p, h) { for(let i=0; i<3; i++) { particleCollections.effects.push(new Particle(p.x, p.y, p.z, { life: random(20, 40), vx: random(-3, 3), vy: random(-3, 3), vz: random(-3, 3), gravity: 0.1, size: random(1, 3), baseHue: h, lightness: random(50, 80) })); } }
+function createExplosion(x, y, z, h) { for (let i = 0; i < 100; i++) { particleCollections.effects.push(new Particle(x, y, z, { life: random(30, 60), vx: random(-5, 5), vy: random(-10, 5), vz: random(-5, 5), gravity: 0.2, size: random(1, 3), baseHue: h, lightness: random(50, 80) })); } }
+let obstacleSpawnTimer = 0;
+function gameLoop() { if (gameState === 'playing') { updateCamera(); updatePlayer(); updateWorld(); updateSkills(); checkSkillEffects(); checkCollision(); checkAndUnlockUltimate(); score += gameSpeed; scoreEl.textContent = `分数: ${Math.floor(score)}`; } draw(); if(useOnScreenControls) drawCooldownUI(); requestAnimationFrame(gameLoop); }
+function draw() { ctx.fillStyle = 'rgba(0, 0, 0, 0.25)'; ctx.fillRect(0, 0, width, height); ctx.globalCompositeOperation = 'lighter'; const particlesToDraw = [ ...particleCollections.background, ...particleCollections.track, ...particleCollections.player, ...particleCollections.effects ]; activeObstacles.forEach(obs => particlesToDraw.push(...obs.particles)); particlesToDraw.sort((a, b) => b.z - a.z).forEach(p => p.draw()); ctx.globalCompositeOperation = 'source-over'; }
+function drawCooldownUI() { document.querySelector('#skill-laser-btn .cooldown-overlay').style.height = `${100 * (1 - player.skills.laser.cooldown / player.skills.laser.maxCooldown)}%`; document.querySelector('#skill-vortex-btn .cooldown-overlay').style.height = `${100 * (1 - player.skills.vortex.cooldown / player.skills.vortex.maxCooldown)}%`; if(player.skills.ultimate.unlocked) document.querySelector('#skill-ultimate-btn .cooldown-overlay').style.height = `${100 * (1 - player.skills.ultimate.cooldown / player.skills.ultimate.maxCooldown)}%`;}
+function startGame() { if (gameState === 'playing') return; gameState = 'playing'; score = 0; player.lane = 0; player.currentX = 0; player.y = player.baseY; player.z = 0; player.isJumping = false; Object.values(player.skills).forEach(s => s.cooldown = s.maxCooldown); player.skills.ultimate.unlocked = false; ultimateSkillBtn.classList.add('hidden'); particleCollections = { player: [], track: [], effects: [], background: [] }; activeObstacles = []; createPlayer(); createTrack(); createStarfield(); gameOverScreen.style.display = 'none'; startScreen.style.display = 'none'; settingsScreen.style.display = 'none'; obstacleSpawnTimer = 100; }
+function init() { loadSettings(); resize(); window.addEventListener('resize', resize); requestAnimationFrame(gameLoop); }
+function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; centerX = width / 2; centerY = height / 2; camera.fov = height > 600 ? height * 0.7 : height; particleCollections.background = []; createStarfield();}
+function loadSettings() { const setting = localStorage.getItem('particleRunner_useOnScreenControls'); useOnScreenControls = setting === 'true'; onScreenControlsToggle.checked = useOnScreenControls; touchControlsContainer.style.display = useOnScreenControls ? 'flex' : 'none'; }
+function saveSettings() { localStorage.setItem('particleRunner_useOnScreenControls', useOnScreenControls); }
+window.addEventListener('keydown', (e) => { if (gameState !== 'playing') { if(e.key !== 'Escape') startGame(); return; } const key = e.key.toLowerCase(); if (key === 'arrowleft' || key === 'a') { player.lane = Math.max(-1, player.lane - 1); } else if (key === 'arrowright' || key === 'd') { player.lane = Math.min(1, player.lane + 1); } else if (key === 'arrowup' || key === 'w' || e.code === 'Space') handleJump(); else if (key === player.skills.laser.key) activateSkill('laser'); else if (key === player.skills.vortex.key) activateSkill('vortex'); else if (key === player.skills.ultimate.key) activateSkill('ultimate'); });
+let touchStartX = 0, touchStartY = 0;
+canvas.addEventListener('touchstart', (e) => { if (gameState !== 'playing' || useOnScreenControls) return; e.preventDefault(); if (e.touches.length > 0) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; } }, { passive: false });
+canvas.addEventListener('touchend', (e) => { if (gameState !== 'playing' || useOnScreenControls || touchStartX === 0) return; e.preventDefault(); const touchEndX = e.changedTouches[0].clientX, touchEndY = e.changedTouches[0].clientY; const dx = touchEndX - touchStartX, dy = touchEndY - touchStartY; const swipeThreshold = 50; if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > swipeThreshold) { if (dy < 0) handleJump(); } else if (Math.abs(dx) > swipeThreshold) { if (dx > 0) player.lane = Math.min(1, player.lane + 1); else player.lane = Math.max(-1, player.lane - 1); } touchStartX = 0; touchStartY = 0; }, { passive: false });
+document.body.addEventListener('click', (e) => { if(e.target.closest('.control-button') || e.target.closest('#settings-button') || e.target.closest('#settings-screen')) return; if(gameState !== 'playing') startGame() });
+settingsButton.addEventListener('click', (e) => { e.stopPropagation(); startScreen.style.display='none'; settingsScreen.style.display='flex'; });
+closeSettingsButton.addEventListener('click', () => { settingsScreen.style.display='none'; startScreen.style.display='flex'; });
+onScreenControlsToggle.addEventListener('change', () => { useOnScreenControls = onScreenControlsToggle.checked; touchControlsContainer.style.display = useOnScreenControls ? 'flex' : 'none'; saveSettings(); });
+const bindTouch = (el, action) => { el.addEventListener('touchstart', (e)=>{ e.preventDefault(); action() }, {passive: false}) };
+bindTouch(document.getElementById('move-left-btn'), () => { if(gameState === 'playing') player.lane = Math.max(-1, player.lane - 1); });
+bindTouch(document.getElementById('move-right-btn'), () => { if(gameState === 'playing') player.lane = Math.min(1, player.lane + 1); });
+bindTouch(document.getElementById('jump-btn'), handleJump);
+bindTouch(document.getElementById('skill-laser-btn'), () => activateSkill('laser'));
+bindTouch(document.getElementById('skill-vortex-btn'), () => activateSkill('vortex'));
+bindTouch(ultimateSkillBtn, () => activateSkill('ultimate'));
 
-// --- Initialization and Finalization ---
-function endGame() {
-    clearInterval(state.dailyExpenseInterval);
-    document.getElementById('final-message').style.display = 'flex';
-}
-document.getElementById('restart-button').addEventListener('click', () => location.reload());
-
-// Initial Load
-document.addEventListener('DOMContentLoaded', () => {
-    addMessage('我叫张龙昊，本是父母的骄傲，未来的希望...直到我点开了这个界面。');
-    state.dailyExpenseInterval = setInterval(applyLifeCost, 20000); // 20-second cycle for life cost
-    updateAssets();
-});
+init();
 </script>
 </body>
 </html>
