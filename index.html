@@ -1,241 +1,708 @@
+
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>粒子跑酷-WWZ</title>
-    <style>
-        :root {
-            --ui-glow: #0ff; --danger-glow: #f00; --skill1-color: #f90;
-            --skill2-color: #90f; --skill-ultimate-color: #ffd700;
-        }
-        body, html {
-            margin: 0; padding: 0; overflow: hidden; height: 100%;
-            background-color: #000; font-family: 'Segoe UI', Tahoma, sans-serif; color: white;
-        }
-        canvas { display: block; position: absolute; top: 0; left: 0; }
-        .text-glow { text-shadow: 0 0 5px var(--ui-glow), 0 0 10px var(--ui-glow); }
-        .hidden { display: none !important; }
-        #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; pointer-events: none; padding: 20px; box-sizing: border-box; }
-        #score { font-size: 2em; font-weight: bold; }
-        .screen-overlay { display: none; flex-direction: column; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); pointer-events: auto; text-align: center; }
-        .screen-overlay h1 { font-size: 3em; margin: 0; }
-        .screen-overlay p { font-size: 1.2em; margin-top: 10px; max-width: 90%; line-height: 1.6; }
-        #start-screen { display: flex; }
-        #game-over-screen h1 { color: #ff4d4d; text-shadow: 0 0 10px var(--danger-glow); }
-        #settings-button { position: absolute; top: 20px; right: 20px; font-size: 2em; cursor: pointer; z-index: 100; pointer-events: auto; }
-        #settings-screen .settings-toggle { margin-top: 30px; font-size: 1.5em; display: flex; align-items: center; }
-        #settings-screen input[type="checkbox"] { width: 25px; height: 25px; margin-right: 15px; }
-        #settings-screen button { margin-top: 40px; font-size: 1.2em; padding: 10px 20px; background: #333; border: 2px solid var(--ui-glow); color: white; border-radius: 8px; cursor: pointer; }
-        #touch-controls { display: none; position: absolute; bottom: 0; left: 0; width: 100%; height: 25%; pointer-events: none; box-sizing: border-box; padding: 20px; justify-content: space-between; align-items: stretch; -webkit-user-select: none; user-select: none; }
-        .control-section { width: 48%; display: flex; pointer-events: auto; }
-        .control-section.skills { justify-content: flex-end; }
-        .control-button { flex-grow: 1; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 15px; margin: 0 5px; display: flex; justify-content: center; align-items: center; font-size: 2em; color: white; position: relative; overflow: hidden; font-weight: bold; }
-        .cooldown-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background-color: rgba(0, 0, 0, 0.5); transition: height 0.1s linear; }
-        #skill-laser-btn { border-color: var(--skill1-color); }
-        #skill-vortex-btn { border-color: var(--skill2-color); }
-        #skill-ultimate-btn { border-color: var(--skill-ultimate-color); text-shadow: 0 0 8px var(--skill-ultimate-color); font-size: 1.8em;}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>吴旺泽的小空间</title>
+  <style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Arial', sans-serif; line-height: 1.6; background: #0a0a0a; color: #fff; overflow-x: hidden; }
+    
+    /* 导航栏 */
+    header {
+      position: fixed;
+      width: 100%;
+      z-index: 2000;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.8rem; letter-spacing: 1px; }
+    nav ul { list-style: none; display: flex; }
+    nav ul li { margin-left: 20px; }
+    nav ul li a {
+      text-decoration: none;
+      color: #fff;
+      transition: color 0.3s;
+    }
+    nav ul li a:hover { color: #1abc9c; }
+    
+    /* 首页动画背景 - 科技感粒子动画 */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #particle-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .hero-content h2 { font-size: 3rem; margin-bottom: 10px; }
+    .hero-content p { font-size: 1.3rem; margin-bottom: 20px; }
+    .hero-content a {
+      padding: 10px 20px;
+      background: #1abc9c;
+      color: #0a0a0a;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .hero-content a:hover { background: #16a085; transform: scale(1.05); }
+    
+    /* 各区块通用样式 */
+    section { padding: 80px 20px; max-width: 1200px; margin: auto; }
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2.2rem;
+      position: relative;
+    }
+    .section-title::after {
+      content: "";
+      width: 60px;
+      height: 3px;
+      background: #1abc9c;
+      display: block;
+      margin: 10px auto 0;
+    }
+    
+    /* 关于我 */
+    .about { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-around; }
+    .about img {
+      max-width: 300px;
+      /* 去掉圆角：完整展示图片 */
+      border-radius: 0;
+      margin: 20px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .about img:hover { transform: scale(1.05); box-shadow: 0 0 20px #1abc9c; }
+    .about-text { flex: 1; min-width: 300px; margin: 20px; font-size: 1.1rem; }
+    
+    /* 生活技能展示 */
+    .skills { display: flex; flex-wrap: wrap; justify-content: space-around; }
+    .skill-item {
+      background: #111;
+      padding: 20px;
+      margin: 10px;
+      /* 去掉圆角 */
+      border-radius: 0;
+      flex: 1 1 250px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    .skill-item:hover { transform: translateY(-8px) scale(1.02); }
+    .skill-item h3 { margin-bottom: 10px; }
+    .progress {
+      background: #333;
+      border-radius: 0;
+      overflow: hidden;
+      height: 10px;
+      margin-bottom: 10px;
+    }
+    .progress-bar {
+      height: 10px;
+      background: #1abc9c;
+      width: 0;
+      animation: progressAnimation 2s forwards;
+    }
+    @keyframes progressAnimation {
+      to { width: 90%; }
+    }
+    
+    /* 优化后的作品展示 */
+    .portfolio-filters {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .portfolio-filters button {
+      background: #111;
+      border: 1px solid #1abc9c;
+      color: #fff;
+      padding: 8px 16px;
+      margin: 0 5px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      border-radius: 0;
+    }
+    .portfolio-filters button:hover {
+      background: #1abc9c;
+      transform: scale(1.05);
+    }
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .portfolio-item {
+      position: relative;
+      overflow: hidden;
+      /* 去掉圆角 */
+      border-radius: 0;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .portfolio-item:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 15px rgba(26, 188, 156, 0.7);
+    }
+    .portfolio-item img {
+      width: 100%;
+      display: block;
+      transition: transform 0.3s;
+    }
+    .portfolio-item:hover img {
+      transform: scale(1.1);
+    }
+    .portfolio-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 10px;
+    }
+    .portfolio-item:hover .portfolio-overlay {
+      opacity: 1;
+    }
+    
+    /* 个人照片合辑 */
+    #photoAlbum {
+      margin-top: 40px;
+    }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 10px;
+    }
+    .photo-grid img {
+      width: 100%;
+      display: block;
+      transition: transform 0.3s;
+    }
+    .photo-grid img:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Lightbox 模态窗口样式 */
+    .lightbox {
+      display: none;
+      position: fixed;
+      z-index: 3000;
+      padding-top: 60px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.9);
+    }
+    .lightbox-content {
+      margin: auto;
+      display: block;
+      max-width: 80%;
+      max-height: 80%;
+    }
+    .caption {
+      text-align: center;
+      color: #ccc;
+      padding: 10px 0;
+    }
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .close:hover { color: #bbb; }
+    
+    /* 倒计时组件 */
+    .countdown {
+      text-align: center;
+      font-size: 1.8rem;
+      margin: 20px 0;
+      padding: 15px;
+      background: #111;
+      border-radius: 0;
+      transition: transform 0.3s;
+    }
+    .countdown:hover { transform: scale(1.05); }
+    
+    /* 个人格言 */
+    .personal-motto {
+      text-align: center;
+      font-style: italic;
+      margin: 20px 0;
+      padding: 15px;
+      background: #222;
+      border-radius: 0;
+      font-size: 1.3rem;
+    }
+    
+    /* 社交媒体链接 */
+    .social-links {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .social-links a {
+      margin: 0 10px;
+      color: #fff;
+      font-size: 1.5rem;
+      text-decoration: none;
+      transition: color 0.3s, transform 0.3s;
+    }
+    .social-links a:hover { color: #1abc9c; transform: scale(1.1); }
+    
+    /* 个人成长时间轴 */
+    .timeline {
+      position: relative;
+      margin: 40px 0;
+      padding: 20px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #1abc9c;
+      transform: translateX(-50%);
+    }
+    .timeline-item {
+      position: relative;
+      width: 45%;
+      padding: 20px;
+      background: #111;
+      border-radius: 0;
+      margin: 20px 0;
+      transition: transform 0.3s;
+    }
+    .timeline-item:hover { transform: scale(1.03); }
+    .timeline-item:nth-child(odd) { left: 0; }
+    .timeline-item:nth-child(even) { left: 55%; }
+    
+    /* 生活之声 - 音乐播放器模块 */
+    .music-section {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .music-player audio { width: 100%; max-width: 400px; }
+    
+    /* 页脚 */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #000;
+    }
+    
+    /* 隐藏验证按钮，放在右下角，不影响整体美观 */
+    #verifyBtn {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(26,188,156,0.7);
+      border: none;
+      color: #fff;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border-radius: 3px;
+      z-index: 5000;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .about { flex-direction: column; }
+      .timeline-item { width: 90%; left: 5% !important; }
+    }
+  </style>
 </head>
 <body>
-    <canvas id="game-canvas"></canvas>
-    <div id="ui-container"><div id="score" class="text-glow">分数: 0</div></div>
-    <div id="start-screen" class="screen-overlay"><div id="settings-button" class="text-glow">⚙️</div><h1 class="text-glow">粒子跑酷 V12</h1><p><b>极限速度，超远飞跃!</b><br><br><b>桌面端:</b> [←][→]移动, [↑/W/空格]跳跃, [J]激光, [K]漩涡, [L]终极技能<br><b>移动端:</b> 滑动或使用屏幕按钮(可在设置中开启)<br><br>点击或按任意键开始</p></div>
-    <div id="settings-screen" class="screen-overlay"><h1 class="text-glow">设置</h1><div class="settings-toggle"><input type="checkbox" id="on-screen-controls-toggle"><label for="on-screen-controls-toggle">开启屏幕按钮</label></div><button id="close-settings-button">返回</button></div>
-    <div id="game-over-screen" class="screen-overlay"><h1>游戏结束</h1><p id="final-score"></p><p>点击或按任意键重新开始</p></div>
-    <div id="touch-controls"><div class="control-section movement"><div id="move-left-btn" class="control-button">←</div><div id="jump-btn" class="control-button">↑</div><div id="move-right-btn" class="control-button">→</div></div><div class="control-section skills"><div id="skill-laser-btn" class="control-button">J<div class="cooldown-overlay"></div></div><div id="skill-vortex-btn" class="control-button">K<div class="cooldown-overlay"></div></div><div id="skill-ultimate-btn" class="control-button hidden">L<div class="cooldown-overlay"></div></div></div></div>
-
-<script>
-// =================================
-// Setup
-// =================================
-const canvas = document.getElementById('game-canvas'), ctx = canvas.getContext('2d');
-const scoreEl = document.getElementById('score'), startScreen = document.getElementById('start-screen'), gameOverScreen = document.getElementById('game-over-screen'), finalScoreEl = document.getElementById('final-score'), settingsButton = document.getElementById('settings-button'), settingsScreen = document.getElementById('settings-screen'), closeSettingsButton = document.getElementById('close-settings-button'), onScreenControlsToggle = document.getElementById('on-screen-controls-toggle'), touchControlsContainer = document.getElementById('touch-controls'), ultimateSkillBtn = document.getElementById('skill-ultimate-btn');
-
-let width, height, centerX, centerY;
-let gameState = 'start', gameSpeed, score;
-
-const camera = { x: 0, y: 150, z: -400, fov: 350, lerpFactor: 0.05 };
-let particleCollections = { player: [], track: [], effects: [], background: [] };
-let activeObstacles = [];
-
-// 【核心改动】 数值调整
-const JUMP_FORCE = 22;
-const GRAVITY = -0.85;
-const JUMP_FORWARD_IMPULSE = 35; // **大幅增加前冲动力**
-const AIR_DRAG = 0.98;
-const BASE_GAME_SPEED = 4.5;     // **加快基础速度**
-const BASE_OBSTACLE_INTERVAL = 600; // **大幅减少初始障碍物**
-
-const LANE_WIDTH = 120;
-const OBSTACLE_SPAWN_Z = 2500;
-const ULTIMATE_UNLOCK_SCORE = 1500;
-
-const player = {
-    lane: 0, targetX: 0, currentX: 0, y: 0, baseY: 0,
-    velocityY: 0, velocityZ: 0, z: 0,
-    width: 50, height: 80, isJumping: false, lerpFactor: 0.25, hitRadius: 40,
-    skills: {
-        laser: { name: 'laser', key: 'j', cooldown: 0, maxCooldown: 180, active: false, duration: 0, maxDuration: 15, hue: 30 },
-        vortex: { name: 'vortex', key: 'k', cooldown: 0, maxCooldown: 500, active: false, duration: 0, maxDuration: 90, hue: 280 },
-        ultimate: { name: 'ultimate', key: 'l', cooldown: 0, maxCooldown: 1800, active: false, duration: 0, maxDuration:10, unlocked: false, hue: 50 }
-    }
-};
-
-let useOnScreenControls = false;
-const random = (min, max) => Math.random() * (max - min) + min;
-
-// ===================================
-// Perspective & Particle System
-// ===================================
-function project3D(x, y, z) {
-    const dx = x - camera.x, dy = y - camera.y, dz = z - camera.z;
-    if (dz <= 0.1) return null;
-    const scale = camera.fov / dz;
-    return { x: centerX + dx * scale, y: centerY - dy * scale, scale: scale, dz: dz };
-}
-
-class Particle {
-     constructor(x, y, z, options = {}) { this.x = x; this.y = y; this.z = z; this.ox = options.ox ?? x; this.oy = options.oy ?? y; this.oz = options.oz ?? z; this.size = options.size || 2; this.baseHue = options.baseHue || 200; this.lightness = options.lightness || 60; this.alpha = options.alpha || 1; this.life = options.life || Infinity; this.vx = options.vx || 0; this.vy = options.vy || 0; this.vz = options.vz || 0; this.gravity = options.gravity || 0; this.particleType = options.particleType || 'default'; if (this.particleType === 'obstacleSphere') { const mag = Math.sqrt(this.ox * this.ox + this.oy * this.oy + this.oz * this.oz); if (mag > 0) { this.normalX = this.ox / mag; this.normalY = this.oy / mag; this.normalZ = this.oz / mag; } else { this.normalX = 0; this.normalY = 0; this.normalZ = 0; } } }
-    update(parentX, parentY, parentZ) { if (this.life !== Infinity) { this.x += this.vx; this.y += this.vy; this.z += this.vz; this.vy += this.gravity; this.life--; this.alpha = Math.max(0, this.life / 60); } if (parentX !== undefined) { this.x = parentX + this.ox; this.y = parentY + this.oy; this.z = parentZ + this.oz; } }
-    draw() { const p = project3D(this.x, this.y, this.z); if (!p) return; if (this.particleType === 'obstacleSphere') { const viewX = camera.x - this.x, viewY = camera.y - this.y, viewZ = camera.z - this.z; const dotProduct = this.normalX * viewX + this.normalY * viewY + this.normalZ * viewZ; if (dotProduct > 0) return; } if (p.x < -p.scale * this.size || p.x > width + p.scale * this.size || p.y < -p.scale * this.size || p.y > height + p.scale * this.size) return; let finalFillStyle = `hsla(${this.baseHue}, 100%, ${this.lightness}%, ${this.alpha * p.scale})`; let finalSize = this.size * p.scale; if (this.particleType === 'obstacleSphere') { const dotProduct = -this.normalZ; if (dotProduct < 0.15 && dotProduct > -0.5) { finalFillStyle = `hsla(0, 0%, ${10 + dotProduct * 20}%, ${0.9 * p.scale})`; finalSize *= 1.5; } else if (dotProduct >= 0.15) { finalFillStyle = `hsla(${this.baseHue}, 100%, ${40 + 20 * dotProduct}%, ${this.alpha * p.scale})`; } else { finalFillStyle = `hsla(0, 100%, 10%, ${0.5 * p.scale})`; } } ctx.beginPath(); ctx.fillStyle = finalFillStyle; ctx.arc(p.x, p.y, Math.max(0.2, finalSize), 0, Math.PI * 2); ctx.fill(); }
-}
-
-// ===================================
-// Game Object & Effect Creation
-// ===================================
-class Obstacle {
-    constructor(x, y, z, radius, type) { this.x = x; this.y = y; this.z = z; this.radius = radius; this.type = type; this.particles = []; this.isAlive = true; }
-    update() {
-        this.z -= gameSpeed;
-        for (const p of this.particles) { p.update(this.x, this.y, this.z); }
-    }
-    destroy() { if (!this.isAlive) return; this.isAlive = false; this.particles.forEach(p => destroyObstacleParticle(p, p.baseHue)); this.particles = []; }
-}
-function createSphereObstacle() {
-    const lane = Math.floor(random(-1, 2)); const radius = 60;
-    const isAirborne = Math.random() > 0.4; const type = isAirborne ? 'air' : 'ground';
-    const sphereCenterY = isAirborne ? radius + 140 : radius;
-    const obstacle = new Obstacle(lane * LANE_WIDTH, sphereCenterY, OBSTACLE_SPAWN_Z, radius, type);
-    const particleCount = 150; const phi = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < particleCount; i++) {
-        const y_norm = 1 - (i / (particleCount - 1)) * 2; const r_norm = Math.sqrt(1 - y_norm * y_norm); const theta = phi * i;
-        const p_ox = Math.cos(theta) * r_norm * radius; const p_oy = y_norm * radius; const p_oz = Math.sin(theta) * r_norm * radius;
-        const particle = new Particle(obstacle.x + p_ox, obstacle.y + p_oy, obstacle.z + p_oz, { ox: p_ox, oy: p_oy, oz: p_oz, size: random(3, 5), baseHue: 0, alpha: random(0.8, 1), particleType: 'obstacleSphere' });
-        obstacle.particles.push(particle);
-    }
-    return obstacle;
-}
-
-// ... other creation functions are unchanged ...
-function createPlayer() { particleCollections.player = []; for (let i = 0; i < 80; i++) { const x = random(-player.width/2, player.width/2) * 0.7; const y = random(0, player.height); particleCollections.player.push(new Particle(x, y, player.z, {size: random(2, 4), baseHue: 180})); } }
-function createTrack() { particleCollections.track = []; for (let i = 0; i < 200; i++) { const ls = Math.random() > 0.5 ? 1 : -1; particleCollections.track.push(new Particle((LANE_WIDTH * 1.5 + random(0, 30)) * ls, 0, random(camera.z, OBSTACLE_SPAWN_Z), { size: 3, baseHue: 240, alpha: 0.7 })); } }
-function createStarfield() { for (let i=0; i<100; i++) { particleCollections.background.push(new Particle(random(-width, width), random(-height, height), random(0, OBSTACLE_SPAWN_Z), {size: random(0.5, 1.5), baseHue: 240, lightness: 80, alpha: random(0.5, 1)})); } }
-function createLaneChangeEffect(fromX) { for(let i=0; i<10; i++) { particleCollections.effects.push(new Particle(fromX, player.y + 20, player.z, {life: 20, vx: random(-2, 2), vy: random(-1, 1), vz: random(2, 5), baseHue: 180, lightness: 70})); } }
-function createRunningTrail() { if(Math.random() > 0.4) return; particleCollections.effects.push(new Particle(player.currentX, player.baseY, player.z, {life: 15, vy: random(0.5, 2), baseHue: 200, lightness: 60, size: random(1,2)})); }
-function createActivationFlare(hue) { for(let i=0; i<30; i++) { const angle = random(0, 2*Math.PI); const speed = random(2, 8); particleCollections.effects.push(new Particle(player.currentX, player.y + 40, player.z, {life: 25, vx: Math.cos(angle) * speed, vy: random(-2,2), vz: Math.sin(angle) * speed, baseHue: hue, lightness: 70, size: random(1,3)})); } }
-
-// ===================================
-// Game Logic & Update Functions
-// ===================================
-function updateCamera() { camera.z = player.z - 400; camera.x += (player.currentX - camera.x) * camera.lerpFactor; }
-function updatePlayer() {
-    let fromX = player.currentX;
-    player.targetX = player.lane * LANE_WIDTH; player.currentX += (player.targetX - player.currentX) * player.lerpFactor;
-    if (Math.abs(fromX - player.currentX) > 2) { createLaneChangeEffect(fromX); }
-    if (player.isJumping) {
-        player.velocityY += GRAVITY; player.y += player.velocityY;
-        player.velocityZ *= AIR_DRAG; player.z += player.velocityZ;
-        if (player.y <= player.baseY) { player.y = player.baseY; player.velocityY = 0; player.velocityZ = 0; player.isJumping = false; }
-    } else {
-        createRunningTrail();
-        player.z += (0 - player.z) * 0.1;
-    }
-    const vortexActive = player.skills.vortex.active;
-    particleCollections.player.forEach(p => {
-       const stretch = player.isJumping ? 1 + Math.abs(player.velocityY) * 0.02 : 1; const spinSpeed = vortexActive ? 0.2 : 0.005; const vortexPull = vortexActive ? 1.5 : 1;
-       p.x = player.currentX + (p.ox + Math.sin(Date.now() * spinSpeed + p.oy) * 3) * vortexPull;
-       p.y = player.y + p.oy * stretch; p.z = player.z;
-       p.hue = vortexActive ? random(270, 330) : 180 + Math.sin(Date.now() * 0.002 + p.ox) * 15;
+  <!-- 导航栏 -->
+  <header>
+    <h1>WU WANGZE</h1>
+    <nav>
+      <ul>
+        <li><a href="#hero">首页</a></li>
+        <li><a href="#about">关于我</a></li>
+        <li><a href="#skills">至理名言</a></li>
+        <li><a href="#portfolio">作品展示</a></li>
+        <li><a href="#photoAlbum">个人照片合辑</a></li>
+        <li><a href="#extras">更多</a></li>
+        <li><a href="#contact">联系</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <!-- 首页 - 科技感粒子动画背景 -->
+  <section class="hero" id="hero">
+    <canvas id="particle-canvas"></canvas>
+    <div class="hero-content">
+      <h2>欢迎来到我的世界</h2>
+      <p>探索科技与生活的交汇</p>
+      <a href="#about">了解更多</a>
+    </div>
+  </section>
+  
+  <!-- 关于我 -->
+  <section id="about">
+    <h2 class="section-title">关于我</h2>
+    <div class="about">
+      <!-- 在此处替换为你的个人照片 URL -->
+      <img class="protected-img" src="" data-src="https://i.ibb.co/35vhThrY/20250608150349.jpg" alt="个人照片">
+      <div class="about-text">
+        <p>你好，我是一名高中生，男生，很帅很可爱！热爱生活的每个细节，从音乐、摄影到旅行，我追寻那份独特的孤傲与自由。</p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- 生活技能展示 -->
+  <section id="skills">
+    <h2 class="section-title">至理名言</h2>
+    <div class="skills">
+      <div class="skill-item">
+        <h3>恭喜你啊同学，被我恭喜到了啊</h3>
+        <div class="progress">
+          <div class="progress-bar" style="width: 90%;"></div>
+        </div>
+        <p>答应我啊，吃饭要用嘴，走路要用腿。</p>
+      </div>
+      <div class="skill-item">
+        <h3>你努力不一定会有结果</h3>
+        <div class="progress">
+          <div class="progress-bar" style="width: 85%;"></div>
+        </div>
+        <p>但没结果一定是没结果啊</p>
+      </div>
+      <div class="skill-item">
+        <h3>欸你看，每个成功男人背后不一定都有一个女人</h3>
+        <div class="progress">
+          <div class="progress-bar" style="width: 80%;"></div>
+        </div>
+        <p>但一定会有一条脊椎</p>
+      </div>
+      <div class="skill-item">
+        <h3>朋友就像雪花一样</h3>
+        <div class="progress">
+          <div class="progress-bar" style="width: 75%;"></div>
+        </div>
+        <p>你对他尿尿，他就会消失</p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- 优化后的作品展示 -->
+  <section id="portfolio">
+    <h2 class="section-title">图片展示</h2>
+    
+    <!-- 分类按钮 -->
+    <div class="portfolio-filters">
+      <button class="filter-btn" data-category="all">全部</button>
+      <button class="filter-btn" data-category="photography">1</button>
+      <button class="filter-btn" data-category="travel">2</button>
+      <button class="filter-btn" data-category="food">3</button>
+    </div>
+    
+    <!-- 作品网格 -->
+    <div class="portfolio-grid">
+      <div class="portfolio-item" data-category="photography">
+        <!-- 替换图片 URL 为你的作品图片 -->
+        <img class="protected-img" src="" data-src="https://i.ibb.co/dsLF0kjw/image.png" alt="1" loading="lazy">
+        <div class="portfolio-overlay">
+          <p>AI女友路小鱼</p>
+        </div>
+      </div>
+      <div class="portfolio-item" data-category="travel">
+        <img class="protected-img" src="" data-src="https://i.ibb.co/CpB4PHrR/image.png" alt="2" loading="lazy">
+        <div class="portfolio-overlay">
+          <p>音乐网站</p>
+        </div>
+      </div>
+      <div class="portfolio-item" data-category="photography">
+        <img class="protected-img" src="" data-src="https://i.ibb.co/svdBzp96/image.png" alt="3" loading="lazy">
+        <div class="portfolio-overlay">
+          <p>你懂的</p>
+        </div>
+      </div>
+      <div class="portfolio-item" data-category="food">
+        <img class="protected-img" src="" data-src="https://i.ibb.co/k2b3qgyQ/image.png" alt="4" loading="lazy">
+        <div class="portfolio-overlay">
+          <p>视频解析器</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- 个人照片合辑 -->
+  <section id="photoAlbum">
+    <h2 class="section-title">个人照片合辑</h2>
+    <div class="photo-grid">
+      <!-- 替换图片 URL 为你的合辑图片 -->
+      <img class="protected-img" src="" data-src="https://i.ibb.co/N6V209Dz/20250608151147.jpg" alt="美照1" loading="lazy">
+      <img class="protected-img" src="" data-src="https://i.ibb.co/G3fkxSRz/20250608151146.jpg" alt="美照2" loading="lazy">
+      <img class="protected-img" src="" data-src="https://i.ibb.co/35vhThrY/20250608150349.jpg" alt="美照3" loading="lazy">
+      <img class="protected-img" src="" data-src="https://i.ibb.co/35vhThrY/20250608150349.jpg" alt="美照4" loading="lazy">
+    </div>
+  </section>
+  
+  <!-- Lightbox 模态窗口 -->
+  <div id="lightbox" class="lightbox">
+    <span class="close">&times;</span>
+    <img class="lightbox-content" id="lightbox-img">
+    <div class="caption" id="lightbox-caption"></div>
+  </div>
+  
+  <!-- 更多组件区域 -->
+  <section id="extras">
+    <h2 class="section-title">更多组件</h2>
+    
+    <!-- 1. 时钟小组件 -->
+    <div class="clock" id="clock">00:00:00</div>
+    
+    <!-- 2. 倒计时组件 -->
+    <div class="countdown" id="countdown">
+      距离我的生日还有：<span id="days">0</span>天 <span id="hours">0</span>小时 <span id="minutes">0</span>分 <span id="seconds">0</span>秒
+    </div>
+    
+    <!-- 3. 个人格言 -->
+    <div class="personal-motto" id="personalMotto">
+      "霞光跌入海的怀抱，浪花悸动着温柔的心跳。"
+    </div>
+    
+    <!-- 4. 社交媒体链接 -->
+    <div class="social-links">
+      <!-- 在 href 中替换为你的社交媒体链接 -->
+      <a href="#" target="_blank">微博</a>
+      <a href="#" target="_blank">微信</a>
+      <a href="#" target="_blank">GitHub</a>
+      <a href="#" target="_blank">Instagram</a>
+    </div>
+    
+    <!-- 5. 个人成长时间轴 -->
+    <div class="timeline">
+      <div class="timeline-item">
+        <h3>2009年</h3>
+        <p>2009年，降生于这个世界，开始这个世界的探索</p>
+      </div>
+      <div class="timeline-item">
+        <h3>2021年</h3>
+        <p>2021年，进入初中，一切安好</p>
+      </div>
+      <div class="timeline-item">
+        <h3>2023年</h3>
+        <p>初三开始，百日誓师，一切过得都很快</p>
+      </div>
+      <div class="timeline-item">
+        <h3>2024年</h3>
+        <p>步入高一，遇见她</p>
+      </div>
+    </div>
+    
+    <!-- 6. 生活之声 - 音乐播放器模块 -->
+    <div class="music-section">
+      <h2 class="section-title">生活之声</h2>
+      <div class="music-player">
+        <audio controls>
+          <!-- 在此处替换为你的音乐音频 URL -->
+          <source src="https://raw.githubusercontent.com/wuwangze/GithubActionSample/refs/heads/main/T.R.Y%20-%20%E4%B8%8D%E6%98%AF%E5%9B%A0%E4%B8%BA%E5%AF%82%E5%AF%9E%E6%89%8D%E6%83%B3%E4%BD%A0.mp3" type="audio/mpeg">
+          您的浏览器不支持音频播放。
+        </audio>
+      </div>
+    </div>
+    
+  </section>
+  
+  <!-- 联系方式 -->
+  <section id="contact">
+    <h2 class="section-title">联系我</h2>
+    <div class="contact" style="text-align: center;">
+      <!-- 静态联系方式 -->
+      <p>Email: wuwangze123@gmail.com</p>
+      <p>QQ: 3334094689</p
+    </div>
+  </section>
+  
+  <!-- 页脚 -->
+  <footer>
+    <p>&copy; 2025 我的个人主页. 保留所有权利.</p>
+  </footer>
+  
+  <!-- 不显眼的验证按钮 -->
+  <button id="verifyBtn">获取图片权限</button>
+  
+  <!-- 脚本部分 -->
+  <script>
+    // 验证按钮功能：点击后提示输入密码，正确则加载所有受保护的图片
+    document.getElementById('verifyBtn').addEventListener('click', function(){
+      var pwd = prompt("输入我的大名：");
+      // 示例密码为 "wuwangze123"，请根据需要修改
+      if(pwd === "吴旺泽") {
+        alert("验证成功，正在加载照片！");
+        // 遍历所有带有 protected-img 类的图片，设置 src 属性为 data-src
+        document.querySelectorAll('.protected-img').forEach(function(img) {
+          img.src = img.getAttribute('data-src');
+        });
+        // 隐藏验证按钮（或禁用）
+        document.getElementById('verifyBtn').style.display = "none";
+      } else {
+        alert("密码错误，无法加载照片！");
+      }
     });
-}
-function updateWorld() {
-    const maxSpeed = 12;
-    gameSpeed = Math.min(maxSpeed, BASE_GAME_SPEED + score / 3000);
-    const minInterval = 60;
-    const scoreFactor = 0.04;
-    let obstacleSpawnInterval = Math.max(minInterval, BASE_OBSTACLE_INTERVAL - score * scoreFactor);
     
-    activeObstacles.forEach(obs => obs.update());
-    activeObstacles = activeObstacles.filter(obs => obs.isAlive && obs.z > camera.z);
-
-    particleCollections.track.forEach(p => { p.z -= gameSpeed; });
-    particleCollections.track = particleCollections.track.filter(p => p.z > camera.z);
+    // 粒子动画效果（canvas）
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+    const numberOfParticles = 120;
     
-    particleCollections.background.forEach(p => { p.z -= gameSpeed * 0.1; if(p.z < camera.z) p.z = player.z + OBSTACLE_SPAWN_Z; });
-    particleCollections.effects.forEach(p => { p.z -= gameSpeed; p.update(); });
-    particleCollections.effects = particleCollections.effects.filter(p => p.life > 0);
-
-    while(particleCollections.track.length < 200) { const ls = Math.random() > 0.5 ? 1 : -1; particleCollections.track.push(new Particle((LANE_WIDTH*1.5 + random(0, 30)) * ls, 0, player.z + OBSTACLE_SPAWN_Z, {size: 3, baseHue: 240, alpha: 0.7}));}
-    obstacleSpawnTimer -= 1;
-    if (obstacleSpawnTimer <= 0) {
-        const newObs = createSphereObstacle();
-        newObs.z += player.z;
-        activeObstacles.push(newObs);
-        obstacleSpawnTimer = obstacleSpawnInterval;
+    function setCanvasSize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-}
-const handleJump = () => { if (!player.isJumping && gameState === 'playing') { player.isJumping = true; player.velocityY = JUMP_FORCE; player.velocityZ = JUMP_FORWARD_IMPULSE; } };
-
-// ===== Collision, Skills, and other logic (Unchanged but included for completeness) =====
-function checkCollision() {
-    const playerHead = player.y + player.height; const playerFeet = player.y;
-    for (const obs of activeObstacles) {
-        if (!obs.isAlive) continue;
-        if (Math.abs(obs.z - player.z) < obs.radius + player.width / 2) {
-            const closestX = Math.max(player.currentX - player.width / 2, Math.min(obs.x, player.currentX + player.width / 2));
-            const horizontalDistSq = (closestX - obs.x) * (closestX - obs.x);
-            if (horizontalDistSq < obs.radius * obs.radius) {
-                if (obs.type === 'ground' && player.y < obs.radius) { gameOver(); return; }
-                if (obs.type === 'air' && Math.abs(player.y + player.height/2 - obs.y) < obs.radius + player.height/2) { gameOver(); return; }
-            }
-        }
+    setCanvasSize();
+    window.addEventListener('resize', setCanvasSize);
+    
+    class Particle {
+      constructor(){
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+        this.color = "rgba(26, 188, 156, 0.8)";
+      }
+      update(){
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
+        if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+      }
+      draw(){
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
-}
-function gameOver() { if (gameState === 'gameOver') return; gameState = 'gameOver'; activeObstacles.forEach(obs => obs.destroy()); createExplosion(player.currentX, player.y, player.z, 180); particleCollections.player = []; finalScoreEl.textContent = `最终分数: ${Math.floor(score)}`; gameOverScreen.style.display = 'flex'; }
-function checkAndUnlockUltimate() { if (score >= ULTIMATE_UNLOCK_SCORE && !player.skills.ultimate.unlocked) { player.skills.ultimate.unlocked = true; ultimateSkillBtn.classList.remove('hidden'); createShockwaveEffect(280, 80); } }
-function updateSkills() { for(const skill of Object.values(player.skills)) { if (skill.cooldown < skill.maxCooldown) { skill.cooldown++; } if (skill.active) { skill.duration--; if (skill.duration <= 0) skill.active = false; } } }
-function checkSkillEffects() { if (player.skills.laser.active) { activeObstacles.forEach(obs => { const ol = Math.round(obs.x / LANE_WIDTH); if(ol === player.lane && obs.z > player.z && obs.z < player.z + OBSTACLE_SPAWN_Z * 0.8) { obs.destroy(); } }); } if (player.skills.vortex.active) { activeObstacles.forEach(obs => { const dz = obs.z - player.z; if(dz > 0 && dz < 1000) { obs.x += (player.currentX - obs.x) * 0.01; obs.y += (player.y - obs.y) * 0.01; if(dz < 50 && Math.abs(obs.x - player.currentX) < 50) { obs.destroy(); } } }); } }
-function activateSkill(skillName) { if (gameState !== 'playing') return; const s = player.skills[skillName]; if (s.cooldown >= s.maxCooldown && (!s.hasOwnProperty('unlocked') || s.unlocked)) { s.active = true; s.duration = s.maxDuration; s.cooldown = 0; createActivationFlare(s.hue); if (skillName === 'ultimate') { [...activeObstacles].forEach(obs => obs.destroy()); createShockwaveEffect(50, 60); } } }
-function createShockwaveEffect(hue, l){ for(let i=0; i<360; i+=5) { const r = i * Math.PI / 180; const s = 15; particleCollections.effects.push(new Particle(player.currentX, player.y + 40, player.z, { life: 60, vx: Math.cos(r) * s, vz: Math.sin(r) * s, vy: random(-1,1), g: 0, size: random(3,6), baseHue: hue, lightness: l })); } }
-function destroyObstacleParticle(p, h) { for(let i=0; i<3; i++) { particleCollections.effects.push(new Particle(p.x, p.y, p.z, { life: random(20, 40), vx: random(-3, 3), vy: random(-3, 3), vz: random(-3, 3), gravity: 0.1, size: random(1, 3), baseHue: h, lightness: random(50, 80) })); } }
-function createExplosion(x, y, z, h) { for (let i = 0; i < 100; i++) { particleCollections.effects.push(new Particle(x, y, z, { life: random(30, 60), vx: random(-5, 5), vy: random(-10, 5), vz: random(-5, 5), gravity: 0.2, size: random(1, 3), baseHue: h, lightness: random(50, 80) })); } }
-let obstacleSpawnTimer = 0;
-function gameLoop() { if (gameState === 'playing') { updateCamera(); updatePlayer(); updateWorld(); updateSkills(); checkSkillEffects(); checkCollision(); checkAndUnlockUltimate(); score += gameSpeed; scoreEl.textContent = `分数: ${Math.floor(score)}`; } draw(); if(useOnScreenControls) drawCooldownUI(); requestAnimationFrame(gameLoop); }
-function draw() { ctx.fillStyle = 'rgba(0, 0, 0, 0.25)'; ctx.fillRect(0, 0, width, height); ctx.globalCompositeOperation = 'lighter'; const particlesToDraw = [ ...particleCollections.background, ...particleCollections.track, ...particleCollections.player, ...particleCollections.effects ]; activeObstacles.forEach(obs => particlesToDraw.push(...obs.particles)); particlesToDraw.sort((a, b) => b.z - a.z).forEach(p => p.draw()); ctx.globalCompositeOperation = 'source-over'; }
-function drawCooldownUI() { document.querySelector('#skill-laser-btn .cooldown-overlay').style.height = `${100 * (1 - player.skills.laser.cooldown / player.skills.laser.maxCooldown)}%`; document.querySelector('#skill-vortex-btn .cooldown-overlay').style.height = `${100 * (1 - player.skills.vortex.cooldown / player.skills.vortex.maxCooldown)}%`; if(player.skills.ultimate.unlocked) document.querySelector('#skill-ultimate-btn .cooldown-overlay').style.height = `${100 * (1 - player.skills.ultimate.cooldown / player.skills.ultimate.maxCooldown)}%`;}
-function startGame() { if (gameState === 'playing') return; gameState = 'playing'; score = 0; player.lane = 0; player.currentX = 0; player.y = player.baseY; player.z = 0; player.isJumping = false; Object.values(player.skills).forEach(s => s.cooldown = s.maxCooldown); player.skills.ultimate.unlocked = false; ultimateSkillBtn.classList.add('hidden'); particleCollections = { player: [], track: [], effects: [], background: [] }; activeObstacles = []; createPlayer(); createTrack(); createStarfield(); gameOverScreen.style.display = 'none'; startScreen.style.display = 'none'; settingsScreen.style.display = 'none'; obstacleSpawnTimer = 100; }
-function init() { loadSettings(); resize(); window.addEventListener('resize', resize); requestAnimationFrame(gameLoop); }
-function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; centerX = width / 2; centerY = height / 2; camera.fov = height > 600 ? height * 0.7 : height; particleCollections.background = []; createStarfield();}
-function loadSettings() { const setting = localStorage.getItem('particleRunner_useOnScreenControls'); useOnScreenControls = setting === 'true'; onScreenControlsToggle.checked = useOnScreenControls; touchControlsContainer.style.display = useOnScreenControls ? 'flex' : 'none'; }
-function saveSettings() { localStorage.setItem('particleRunner_useOnScreenControls', useOnScreenControls); }
-window.addEventListener('keydown', (e) => { if (gameState !== 'playing') { if(e.key !== 'Escape') startGame(); return; } const key = e.key.toLowerCase(); if (key === 'arrowleft' || key === 'a') { player.lane = Math.max(-1, player.lane - 1); } else if (key === 'arrowright' || key === 'd') { player.lane = Math.min(1, player.lane + 1); } else if (key === 'arrowup' || key === 'w' || e.code === 'Space') handleJump(); else if (key === player.skills.laser.key) activateSkill('laser'); else if (key === player.skills.vortex.key) activateSkill('vortex'); else if (key === player.skills.ultimate.key) activateSkill('ultimate'); });
-let touchStartX = 0, touchStartY = 0;
-canvas.addEventListener('touchstart', (e) => { if (gameState !== 'playing' || useOnScreenControls) return; e.preventDefault(); if (e.touches.length > 0) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; } }, { passive: false });
-canvas.addEventListener('touchend', (e) => { if (gameState !== 'playing' || useOnScreenControls || touchStartX === 0) return; e.preventDefault(); const touchEndX = e.changedTouches[0].clientX, touchEndY = e.changedTouches[0].clientY; const dx = touchEndX - touchStartX, dy = touchEndY - touchStartY; const swipeThreshold = 50; if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > swipeThreshold) { if (dy < 0) handleJump(); } else if (Math.abs(dx) > swipeThreshold) { if (dx > 0) player.lane = Math.min(1, player.lane + 1); else player.lane = Math.max(-1, player.lane - 1); } touchStartX = 0; touchStartY = 0; }, { passive: false });
-document.body.addEventListener('click', (e) => { if(e.target.closest('.control-button') || e.target.closest('#settings-button') || e.target.closest('#settings-screen')) return; if(gameState !== 'playing') startGame() });
-settingsButton.addEventListener('click', (e) => { e.stopPropagation(); startScreen.style.display='none'; settingsScreen.style.display='flex'; });
-closeSettingsButton.addEventListener('click', () => { settingsScreen.style.display='none'; startScreen.style.display='flex'; });
-onScreenControlsToggle.addEventListener('change', () => { useOnScreenControls = onScreenControlsToggle.checked; touchControlsContainer.style.display = useOnScreenControls ? 'flex' : 'none'; saveSettings(); });
-const bindTouch = (el, action) => { el.addEventListener('touchstart', (e)=>{ e.preventDefault(); action() }, {passive: false}) };
-bindTouch(document.getElementById('move-left-btn'), () => { if(gameState === 'playing') player.lane = Math.max(-1, player.lane - 1); });
-bindTouch(document.getElementById('move-right-btn'), () => { if(gameState === 'playing') player.lane = Math.min(1, player.lane + 1); });
-bindTouch(document.getElementById('jump-btn'), handleJump);
-bindTouch(document.getElementById('skill-laser-btn'), () => activateSkill('laser'));
-bindTouch(document.getElementById('skill-vortex-btn'), () => activateSkill('vortex'));
-bindTouch(ultimateSkillBtn, () => activateSkill('ultimate'));
-
-init();
-</script>
+    
+    function initParticles(){
+      particlesArray = [];
+      for (let i = 0; i < numberOfParticles; i++){
+        particlesArray.push(new Particle());
+      }
+    }
+    
+    function animateParticles(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesArray.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    
+    initParticles();
+    animateParticles();
+    
+    // 时钟组件
+    function updateClock(){
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+    // 倒计时组件 - 倒计时你的生日（示例目标日期为2025-04-08，请根据实际换算调整）
+    const targetDate = new Date("2025-04-08T00:00:00");
+    function updateCountdown(){
+      const now = new Date();
+      const diff = targetDate - now;
+      if(diff < 0) {
+        document.getElementById('countdown').innerHTML = "生日已到！";
+        return;
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      document.getElementById('countdown').innerHTML = 
+        `距离我的生日还有：<span id="days">${days}</span>天 <span id="hours">${hours}</span>小时 <span id="minutes">${minutes}</span>分 <span id="seconds">${seconds}</span>秒`;
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+    
+    // 作品展示筛选功能
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+    
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const category = btn.getAttribute('data-category');
+        portfolioItems.forEach(item => {
+          if(category === 'all' || item.getAttribute('data-category') === category){
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+    
+    // Lightbox 功能
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const closeBtn = document.querySelector('.lightbox .close');
+    
+    portfolioItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const img = item.querySelector('img');
+        const captionText = item.querySelector('.portfolio-overlay').innerHTML;
+        lightbox.style.display = 'block';
+        lightboxImg.src = img.src;
+        lightboxCaption.innerHTML = captionText;
+      });
+    });
+    
+    closeBtn.addEventListener('click', () => {
+      lightbox.style.display = 'none';
+    });
+    
+    // 点击空白区域关闭 lightbox
+    lightbox.addEventListener('click', (e) => {
+      if(e.target === lightbox) {
+        lightbox.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
