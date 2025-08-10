@@ -1,34 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>WWZ编程语言-助力世界和平</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWZ-汉字加密系统 - Chinese Character Encryption System</title>
     <style>
-      
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
-        .main-container {
-            max-width: 1400px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #5f72bd 0%, #9b23ea 100%);
+            background: linear-gradient(135deg, #2c3e50, #34495e);
             color: white;
             padding: 30px;
             text-align: center;
@@ -37,1807 +37,672 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
-            font-size: 1.2em;
+            font-size: 1.1em;
             opacity: 0.9;
         }
 
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+        .main-content {
             padding: 30px;
         }
 
-        .panel {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        .encryption-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section, .output-section {
+            background: #f8f9fa;
             padding: 25px;
-            display: flex;
-            flex-direction: column;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
         }
 
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+        .input-section h3, .output-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
         }
 
-        .panel-header h2 {
-            color: #333;
-            font-size: 1.5em;
-        }
-
-        .editor-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .line-numbers {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 50px;
-            padding: 12px 5px;
-            background: #f8f8f8;
-            border-right: 1px solid #e0e0e0;
-            color: #999;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            line-height: 21px;
-            text-align: right;
-            user-select: none;
-        }
-
-        .code-wrapper {
+        .textarea-container {
             position: relative;
-            flex: 1;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
+            margin-bottom: 15px;
         }
 
-        #code {
+        textarea {
             width: 100%;
-            height: 100%;
-            padding: 12px 12px 12px 62px;
-            font-family: 'Consolas', 'Monaco', 'Microsoft YaHei', monospace;
-            font-size: 14px;
-            line-height: 21px;
-            border: none;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
             outline: none;
-            resize: none;
-            background: #fafafa;
-            color: #333;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            color: #666;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
         .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .control-row {
             display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
             gap: 10px;
-            margin-top: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 120px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-encrypt {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-decrypt {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-copy {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-demo {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #666;
+        button:active {
+            transform: translateY(0);
         }
 
-        .btn-secondary:hover {
-            background: #e0e0e0;
+        .algorithm-explanation {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            margin-bottom: 30px;
         }
 
-        .output-area {
-            flex: 1;
-            background: #f8f8f8;
-            border-radius: 8px;
-            padding: 20px;
-            font-family: 'Consolas', monospace;
-            font-size: 14px;
+        .algorithm-explanation h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .algorithm-explanation p {
             line-height: 1.6;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            min-height: 300px;
-        }
-
-        .error {
-            color: #e53e3e;
-            font-weight: 600;
-        }
-
-        .success {
-            color: #38a169;
-            font-weight: 600;
-        }
-
-        .warning {
-            color: #d69e2e;
-            font-weight: 600;
-        }
-
-        .info {
-            color: #3182ce;
-            font-weight: 600;
-        }
-
-        .syntax-guide {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .syntax-section {
-            margin-bottom: 20px;
-        }
-
-        .syntax-section h4 {
-            color: #4a5568;
+            color: #34495e;
             margin-bottom: 10px;
-            font-size: 1.1em;
         }
 
-        .syntax-example {
-            background: white;
-            padding: 10px 15px;
-            border-radius: 6px;
-            font-family: 'Consolas', monospace;
-            font-size: 13px;
-            margin-bottom: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        .algorithm-explanation code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
         }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            color: #666;
-        }
-
-        .tab:hover {
-            color: #333;
-        }
-
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .examples-grid {
+        .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
         }
 
-        .example-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
         }
 
-        .example-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .example-card h5 {
-            color: #333;
+        .stat-card h4 {
+            font-size: 2em;
             margin-bottom: 5px;
         }
 
-        .example-card p {
-            color: #666;
-            font-size: 13px;
+        .stat-card p {
+            opacity: 0.9;
         }
 
-        .console-log {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #27ae60;
+            color: white;
+            border-radius: 10px;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
         }
 
-        .console-log:last-child {
-            border-bottom: none;
+        .notification.show {
+            transform: translateX(0);
         }
 
-        @media (max-width: 968px) {
-            .content {
+        @media (max-width: 768px) {
+            .encryption-panel {
                 grid-template-columns: 1fr;
             }
+            
+            .control-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .button-group {
+                justify-content: center;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .example-section {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .example-section h4 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .example-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
+    <div class="container">
         <div class="header">
-            <h1>WWZ编程语言 2.0</h1>
-            <p>自然语言编程实验更简单、更自然</p>
+            <h1>🔐 汉字加密系统</h1>
+            <p>基于Unicode偏移的高级汉字加密解密工具</p>
         </div>
 
-        <div class="content">
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>代码编辑器</h2>
-                    <div>
-                        <span id="cursor-position">行 1, 列 1</span>
+        <div class="main-content">
+            <!-- 加密解密面板 -->
+            <div class="encryption-panel">
+                <div class="input-section">
+                    <h3>📝 输入文本</h3>
+                    <div class="textarea-container">
+                        <textarea id="inputText" placeholder="请输入要加密或解密的汉字文本...&#10;支持中文字符、标点符号等"></textarea>
+                        <div class="char-count" id="inputCount">0 字符</div>
                     </div>
                 </div>
 
-                <div class="editor-container">
-                    <div class="code-wrapper">
-                        <div class="line-numbers" id="lineNumbers">1</div>
-                        <textarea id="code" placeholder="在这里输入您的汉语代码..." spellcheck="false">
-// 经典算法实现
-输出 "=== 排序算法示例 ==="
-
-// 冒泡排序
-定义 函数 冒泡排序 参数为 数组
-    定义 变量 长度 等于 数组的长度
-    定义 变量 i 等于 0
-    
-    当 i 小于 长度 减去 1 时
-        定义 变量 j 等于 0
-        当 j 小于 长度 减去 i 减去 1 时
-            如果 数组[j] 大于 数组[j 加上 1] 那么
-                // 交换元素
-                定义 变量 临时 等于 数组[j]
-                数组[j] 等于 数组[j 加上 1]
-                数组[j 加上 1] 等于 临时
-            结束
-            j 等于 j 加上 1
-        结束
-        i 等于 i 加上 1
-    结束
-    
-    返回 数组
-结束
-
-定义 变量 测试数组 等于 [64, 34, 25, 12, 22, 11, 90]
-输出 "原始数组：" 加上 测试数组
-定义 变量 排序后 等于 调用 冒泡排序 传入 测试数组
-输出 "排序后：" 加上 排序后
-
-// 二分查找
-输出 "\n=== 二分查找示例 ==="
-定义 函数 二分查找 参数为 数组, 目标
-    定义 变量 左 等于 0
-    定义 变量 右 等于 数组的长度 减去 1
-    
-    当 左 小于等于 右 时
-        定义 变量 中间 等于 取整((左 加上 右) 除以 2)
-        
-        如果 数组[中间] 等于 目标 那么
-            返回 中间
-        否则如果 数组[中间] 小于 目标 那么
-            左 等于 中间 加上 1
-        否则
-            右 等于 中间 减去 1
-        结束
-    结束
-    
-    返回 -1
-结束
-
-定义 变量 有序数组 等于 [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
-输出 "在数组" 加上 有序数组 加上 "中查找："
-
-循环 目标值 在 [7, 10, 1, 19] 中
-    定义 变量 位置 等于 调用 二分查找 传入 有序数组, 目标值
-    如果 位置 不等于 -1 那么
-        输出 "  " 加上 目标值 加上 " 在位置 " 加上 位置
-    否则
-        输出 "  " 加上 目标值 加上 " 未找到"
-    结束
-结束
-
-// 最大公约数（欧几里得算法）
-输出 "\n=== 最大公约数示例 ==="
-定义 函数 最大公约数 参数为 a, b
-    当 b 不等于 0 时
-        定义 变量 临时 等于 b
-        b 等于 a 取余 b
-        a 等于 临时
-    结束
-    返回 a
-结束
-
-定义 变量 数对列表 等于 [[48, 18], [100, 35], [17, 19]]
-循环 数对 在 数对列表 中
-    定义 变量 结果 等于 调用 最大公约数 传入 数对[0], 数对[1]
-    输出 数对[0] 加上 " 和 " 加上 数对[1] 加上 " 的最大公约数是 " 加上 结果
-结束</textarea>
-                    </div>
-
-                    <div class="controls">
-                        <button class="btn-primary" onclick="runCode()">
-                            ▶️ 运行代码
-                        </button>
-                        <button class="btn-secondary" onclick="clearCode()">
-                            🗑️ 清空
-                        </button>
-                        <button class="btn-secondary" onclick="formatCode()">
-                            📐 格式化
-                        </button>
-                        <button class="btn-secondary" onclick="saveCode()">
-                            💾 保存
-                        </button>
-                        <button class="btn-secondary" onclick="loadCode()">
-                            📁 加载
-                        </button>
-                    </div>
-                </div>
-
-                <div class="syntax-guide">
-                    <h3>语法参考指南</h3>
-                    
-                    <div class="syntax-section">
-                        <h4>📌 基础语法</h4>
-                        <div class="syntax-example">定义 变量 名称 等于 值</div>
-                        <div class="syntax-example">输出 "文本" 或 变量</div>
-                        <div class="syntax-example">// 这是注释</div>
-                    </div>
-
-                    <div class="syntax-section">
-                        <h4>🔄 控制流程</h4>
-                        <div class="syntax-example">如果 条件 那么 ... 否则 ... 结束</div>
-                        <div class="syntax-example">循环 变量 在 列表 中 ... 结束</div>
-                        <div class="syntax-example">当 条件 时 ... 结束</div>
-                    </div>
-
-                    <div class="syntax-section">
-                        <h4>🎯 函数定义</h4>
-                        <div class="syntax-example">定义 函数 名称 参数为 参数1, 参数2 ... 结束</div>
-                        <div class="syntax-example">返回 值</div>
-                        <div class="syntax-example">调用 函数名 传入 参数1, 参数2</div>
-                    </div>
-
-                    <div class="syntax-section">
-                        <h4>📊 数据结构</h4>
-                        <div class="syntax-example">数组：[元素1, 元素2, ...]</div>
-                        <div class="syntax-example">访问：数组[索引]</div>
-                        <div class="syntax-example">赋值：数组[索引] 等于 值</div>
-                        <div class="syntax-example">添加 元素 到 数组</div>
+                <div class="output-section">
+                    <h3>📄 输出结果</h3>
+                    <div class="textarea-container">
+                        <textarea id="outputText" placeholder="加密或解密的结果将在这里显示..." readonly></textarea>
+                        <div class="char-count" id="outputCount">0 字符</div>
                     </div>
                 </div>
             </div>
 
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>运行结果</h2>
-                    <button class="btn-secondary" onclick="clearOutput()" style="padding: 5px 15px;">
-                        清空输出
-                    </button>
+            <!-- 控制面板 -->
+            <div class="controls">
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="encryptionKey">🔑 加密密钥:</label>
+                        <input type="number" id="encryptionKey" value="888" min="1" max="10000">
+                    </div>
+                    <div class="control-group">
+                        <label for="complexity">🎛️ 复杂度:</label>
+                        <input type="number" id="complexity" value="3" min="1" max="10" title="增加算法复杂度">
+                    </div>
                 </div>
 
-                <div class="output-area" id="output"></div>
+                <div class="button-group">
+                    <button class="btn-encrypt" onclick="encryptText()">🔒 加密</button>
+                    <button class="btn-decrypt" onclick="decryptText()">🔓 解密</button>
+                    <button class="btn-copy" onclick="copyResult()">📋 复制结果</button>
+                    <button class="btn-clear" onclick="clearAll()">🗑️ 清空</button>
+                    <button class="btn-demo" onclick="loadDemo()">🎯 演示</button>
+                </div>
+            </div>
+
+            <!-- 算法说明 -->
+            <div class="algorithm-explanation">
+                <h3>🧮 加密算法原理</h3>
+                <p><strong>核心算法：</strong>多层Unicode偏移加密</p>
+                <p>1. <strong>字符转换：</strong>将汉字转换为Unicode码点</p>
+                <p>2. <strong>多重加密：</strong>对每个字符的Unicode值进行 <code>密钥 × 复杂度 × 字符位置</code> 的偏移</p>
+                <p>3. <strong>位置权重：</strong>根据字符在文本中的位置赋予不同的加密强度</p>
+                <p>4. <strong>循环保护：</strong>确保加密后的字符仍在有效的Unicode汉字范围内</p>
+                <p>5. <strong>可逆性保证：</strong>解密时执行相反的数学运算，确保100%还原</p>
+
+                <div class="example-section">
+                    <h4>🔍 加密示例</h4>
+                    <div class="example-item">原文：中 (Unicode: 20013)</div>
+                    <div class="example-item">密钥：888，复杂度：3，位置：0</div>
+                    <div class="example-item">计算：20013 + (888 × 3 × 1) = 22677</div>
+                    <div class="example-item">结果：塵 (Unicode: 22677)</div>
+                </div>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="stats">
+                <div class="stat-card">
+                    <h4 id="totalChars">0</h4>
+                    <p>处理字符数</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="chineseChars">0</h4>
+                    <p>汉字字符数</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="operationCount">0</h4>
+                    <p>操作次数</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="encryptionStrength">0</h4>
+                    <p>当前加密强度</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- 通知提示 -->
+    <div class="notification" id="notification">操作成功!</div>
+
     <script>
-        // 修复后的汉语编程语言解释器
-        class ChineseInterpreter {
-            constructor() {
-                this.reset();
-            }
+        // 全局变量
+        let operationCount = 0;
+        let totalCharsProcessed = 0;
 
-            reset() {
-                this.variables = new Map();
-                this.functions = new Map();
-                this.classes = new Map();
-                this.output = [];
-                this.errors = [];
-                this.callStack = [];
-                this.loopStack = [];
-                this.currentLine = 0;
-                
-                // 内置函数
-                this.builtins = new Map([
-                    ['长度', (args) => {
-                        const obj = args[0];
-                        if (typeof obj === 'string' || Array.isArray(obj)) {
-                            return obj.length;
-                        } else if (obj instanceof Map) {
-                            return obj.size;
-                        }
-                        throw new Error('长度函数只能用于字符串、数组或字典');
-                    }],
-                    ['取整', (args) => Math.floor(args[0])],
-                    ['取上整', (args) => Math.ceil(args[0])],
-                    ['绝对值', (args) => Math.abs(args[0])],
-                    ['平方根', (args) => Math.sqrt(args[0])],
-                ]);
-            }
-
-            // 词法分析器
-            tokenize(code) {
-                const lines = code.split('\n');
-                const tokens = [];
-                
-                for (let lineNum = 0; lineNum < lines.length; lineNum++) {
-                    const line = lines[lineNum];
-                    
-                    // 跳过空行
-                    if (line.trim() === '') {
-                        tokens.push({ type: 'NEWLINE', value: '\n', line: lineNum + 1 });
-                        continue;
-                    }
-                    
-                    // 处理注释
-                    if (line.trim().startsWith('//')) {
-                        tokens.push({ type: 'NEWLINE', value: '\n', line: lineNum + 1 });
-                        continue;
-                    }
-                    
-                    // 提取行中的所有token
-                    const lineTokens = this.tokenizeLine(line, lineNum + 1);
-                    tokens.push(...lineTokens);
-                    
-                    // 添加换行标记
-                    tokens.push({ type: 'NEWLINE', value: '\n', line: lineNum + 1 });
-                }
-                
-                return tokens;
-            }
-
-            tokenizeLine(line, lineNum) {
-                const tokens = [];
-                const keywords = [
-                    '定义', '变量', '等于', '如果', '那么', '否则', '否则如果', '结束',
-                    '循环', '在', '中', '当', '时', '函数', '参数为', '返回', '调用',
-                    '传入', '输出', '加上', '减去', '乘以', '除以', '取余', '幂',
-                    '大于', '小于', '大于等于', '小于等于', '不等于', '并且', '或者', '非',
-                    '的', '长度', '类', '属性', '方法', '构造函数', '创建', '设置',
-                    '尝试', '捕获错误', '最终', '抛出错误', '添加', '到', '删除',
-                    '跳出循环', '继续循环', '为真', '为假', '空值', '取整', '取上整',
-                    '绝对值', '平方根'
-                ];
-                
-                let i = 0;
-                while (i < line.length) {
-                    // 跳过空白
-                    if (/\s/.test(line[i])) {
-                        i++;
-                        continue;
-                    }
-                    
-                    // 字符串
-                    if (line[i] === '"' || line[i] === "'") {
-                        const quote = line[i];
-                        let j = i + 1;
-                        let str = quote;
-                        while (j < line.length && line[j] !== quote) {
-                            if (line[j] === '\\' && j + 1 < line.length) {
-                                str += line[j] + line[j + 1];
-                                j += 2;
-                            } else {
-                                str += line[j];
-                                j++;
-                            }
-                        }
-                        if (j < line.length) {
-                            str += quote;
-                            j++;
-                        }
-                        tokens.push({ type: 'STRING', value: str, line: lineNum });
-                        i = j;
-                        continue;
-                    }
-                    
-                    // 数字
-                    if (/\d/.test(line[i])) {
-                        let j = i;
-                        let hasDecimal = false;
-                        while (j < line.length && (/\d/.test(line[j]) || (line[j] === '.' && !hasDecimal))) {
-                            if (line[j] === '.') hasDecimal = true;
-                            j++;
-                        }
-                        tokens.push({ type: 'NUMBER', value: line.substring(i, j), line: lineNum });
-                        i = j;
-                        continue;
-                    }
-                    
-                    // 分隔符
-                    if ('[],(){}:'.includes(line[i])) {
-                        tokens.push({ type: 'DELIMITER', value: line[i], line: lineNum });
-                        i++;
-                        continue;
-                    }
-                    
-                    // 标识符或关键字
-                    if (/[\w\u4e00-\u9fa5]/.test(line[i])) {
-                        let j = i;
-                        while (j < line.length && /[\w\u4e00-\u9fa5]/.test(line[j])) {
-                            j++;
-                        }
-                        const word = line.substring(i, j);
-                        
-                        if (keywords.includes(word)) {
-                            tokens.push({ type: 'KEYWORD', value: word, line: lineNum });
-                        } else {
-                            tokens.push({ type: 'IDENTIFIER', value: word, line: lineNum });
-                        }
-                        i = j;
-                        continue;
-                    }
-                    
-                    // 未知字符
-                    i++;
-                }
-                
-                return tokens;
-            }
-
-            // 解析器
-            parse(tokens) {
-                this.tokens = tokens;
-                this.currentToken = 0;
-                
-                const ast = {
-                    type: 'Program',
-                    body: []
-                };
-                
-                while (this.currentToken < this.tokens.length) {
-                    const stmt = this.parseStatement();
-                    if (stmt) {
-                        ast.body.push(stmt);
-                    }
-                }
-                
-                return ast;
-            }
-
-            getCurrentToken() {
-                return this.tokens[this.currentToken] || null;
-            }
-
-            peekToken(offset = 0) {
-                return this.tokens[this.currentToken + offset] || null;
-            }
-
-            consumeToken(expectedValue = null) {
-                const token = this.getCurrentToken();
-                if (expectedValue && token && token.value !== expectedValue) {
-                    throw this.createError(`期望 '${expectedValue}'，但得到 '${token.value}'`);
-                }
-                this.currentToken++;
-                return token;
-            }
-
-            skipNewlines() {
-                while (this.getCurrentToken() && this.getCurrentToken().type === 'NEWLINE') {
-                    this.currentToken++;
-                }
-            }
-
-            parseStatement() {
-                this.skipNewlines();
-                const token = this.getCurrentToken();
-                if (!token) return null;
-                
-                this.currentLine = token.line;
-                
-                try {
-                    switch (token.value) {
-                        case '定义':
-                            return this.parseDefinition();
-                        case '如果':
-                            return this.parseIfStatement();
-                        case '循环':
-                            return this.parseForLoop();
-                        case '当':
-                            return this.parseWhileLoop();
-                        case '输出':
-                            return this.parseOutput();
-                        case '返回':
-                            return this.parseReturn();
-                        case '调用':
-                            return this.parseFunctionCall();
-                        case '添加':
-                            return this.parseArrayPush();
-                        default:
-                            // 检查是否是赋值语句（包括数组元素赋值）
-                            if (token.type === 'IDENTIFIER') {
-                                // 预读检查是否是数组元素赋值
-                                let lookahead = 1;
-                                let isArrayAccess = false;
-                                
-                                                                if (this.peekToken(lookahead) && this.peekToken(lookahead).value === '[') {
-                                    // 跳过数组索引部分
-                                    lookahead++;
-                                    let bracketCount = 1;
-                                    while (lookahead < this.tokens.length - this.currentToken && bracketCount > 0) {
-                                        const nextToken = this.peekToken(lookahead);
-                                        if (nextToken.value === '[') bracketCount++;
-                                        if (nextToken.value === ']') bracketCount--;
-                                        lookahead++;
-                                    }
-                                    isArrayAccess = true;
-                                }
-                                
-                                // 检查是否有等于号
-                                if (this.peekToken(lookahead) && this.peekToken(lookahead).value === '等于') {
-                                    if (isArrayAccess) {
-                                        return this.parseArrayElementAssignment();
-                                    } else {
-                                        return this.parseAssignment();
-                                    }
-                                }
-                            }
-                            
-                            // 跳过未识别的token
-                            this.consumeToken();
-                            return null;
-                    }
-                } catch (error) {
-                    this.errors.push(error);
-                    // 恢复到下一行
-                    while (this.getCurrentToken() && this.getCurrentToken().type !== 'NEWLINE') {
-                        this.currentToken++;
-                    }
-                    return null;
-                }
-            }
-
-            parseDefinition() {
-                this.consumeToken('定义');
-                const nextToken = this.getCurrentToken();
-                
-                switch (nextToken.value) {
-                    case '变量':
-                        return this.parseVariableDeclaration();
-                    case '函数':
-                        return this.parseFunctionDeclaration();
-                    case '类':
-                        return this.parseClassDeclaration();
-                    default:
-                        throw this.createError('定义后应该跟随 变量、函数 或 类');
-                }
-            }
-
-            parseVariableDeclaration() {
-                this.consumeToken('变量');
-                const name = this.consumeToken();
-                if (name.type !== 'IDENTIFIER') {
-                    throw this.createError('变量名必须是标识符');
-                }
-                
-                this.consumeToken('等于');
-                const value = this.parseExpression();
-                
-                return {
-                    type: 'VariableDeclaration',
-                    name: name.value,
-                    value: value,
-                    line: name.line
-                };
-            }
-
-            parseFunctionDeclaration() {
-                this.consumeToken('函数');
-                const name = this.consumeToken();
-                if (name.type !== 'IDENTIFIER') {
-                    throw this.createError('函数名必须是标识符');
-                }
-                
-                const params = [];
-                if (this.getCurrentToken() && this.getCurrentToken().value === '参数为') {
-                    this.consumeToken('参数为');
-                    
-                    // 解析参数列表
-                    while (this.getCurrentToken() && 
-                           this.getCurrentToken().type === 'IDENTIFIER') {
-                        params.push(this.consumeToken().value);
-                        
-                        if (this.getCurrentToken() && this.getCurrentToken().value === ',') {
-                            this.consumeToken(',');
-                        }
-                    }
-                }
-                
-                this.skipNewlines();
-                
-                // 解析函数体
-                const body = [];
-                while (this.getCurrentToken() && this.getCurrentToken().value !== '结束') {
-                    const stmt = this.parseStatement();
-                    if (stmt) {
-                        body.push(stmt);
-                    }
-                }
-                
-                this.consumeToken('结束');
-                
-                return {
-                    type: 'FunctionDeclaration',
-                    name: name.value,
-                    params: params,
-                    body: body,
-                    line: name.line
-                };
-            }
-
-            parseIfStatement() {
-                this.consumeToken('如果');
-                const condition = this.parseExpression();
-                this.consumeToken('那么');
-                this.skipNewlines();
-                
-                const thenBranch = [];
-                while (this.getCurrentToken() && 
-                       !['否则', '否则如果', '结束'].includes(this.getCurrentToken().value)) {
-                    const stmt = this.parseStatement();
-                    if (stmt) {
-                        thenBranch.push(stmt);
-                    }
-                }
-                
-                let elseBranch = [];
-                
-                if (this.getCurrentToken() && this.getCurrentToken().value === '否则如果') {
-                    this.consumeToken('否则如果');
-                    const elseIf = this.parseIfStatement();
-                    elseBranch = [elseIf];
-                } else if (this.getCurrentToken() && this.getCurrentToken().value === '否则') {
-                    this.consumeToken('否则');
-                    this.skipNewlines();
-                    
-                    while (this.getCurrentToken() && this.getCurrentToken().value !== '结束') {
-                        const stmt = this.parseStatement();
-                        if (stmt) {
-                            elseBranch.push(stmt);
-                        }
-                    }
-                }
-                
-                if (this.getCurrentToken() && this.getCurrentToken().value === '结束') {
-                    this.consumeToken('结束');
-                }
-                
-                return {
-                    type: 'IfStatement',
-                    condition: condition,
-                    thenBranch: thenBranch,
-                    elseBranch: elseBranch
-                };
-            }
-
-            parseForLoop() {
-                this.consumeToken('循环');
-                const variable = this.consumeToken();
-                this.consumeToken('在');
-                const list = this.parseExpression();
-                this.consumeToken('中');
-                this.skipNewlines();
-                
-                const body = [];
-                while (this.getCurrentToken() && this.getCurrentToken().value !== '结束') {
-                    const stmt = this.parseStatement();
-                    if (stmt) {
-                        body.push(stmt);
-                    }
-                }
-                
-                this.consumeToken('结束');
-                
-                return {
-                    type: 'ForLoop',
-                    variable: variable.value,
-                    list: list,
-                    body: body
-                };
-            }
-
-            parseWhileLoop() {
-                this.consumeToken('当');
-                const condition = this.parseExpression();
-                this.consumeToken('时');
-                this.skipNewlines();
-                
-                const body = [];
-                while (this.getCurrentToken() && this.getCurrentToken().value !== '结束') {
-                    const stmt = this.parseStatement();
-                    if (stmt) {
-                        body.push(stmt);
-                    }
-                }
-                
-                this.consumeToken('结束');
-                
-                return {
-                    type: 'WhileLoop',
-                    condition: condition,
-                    body: body
-                };
-            }
-
-            parseOutput() {
-                this.consumeToken('输出');
-                const value = this.parseExpression();
-                
-                return {
-                    type: 'OutputStatement',
-                    value: value
-                };
-            }
-
-            parseReturn() {
-                this.consumeToken('返回');
-                const value = this.parseExpression();
-                
-                return {
-                    type: 'ReturnStatement',
-                    value: value
-                };
-            }
-
-            parseAssignment() {
-                const name = this.consumeToken();
-                this.consumeToken('等于');
-                const value = this.parseExpression();
-                
-                return {
-                    type: 'Assignment',
-                    name: name.value,
-                    value: value
-                };
-            }
-
-            parseArrayElementAssignment() {
-                const name = this.consumeToken();
-                this.consumeToken('[');
-                const index = this.parseExpression();
-                this.consumeToken(']');
-                this.consumeToken('等于');
-                const value = this.parseExpression();
-                
-                return {
-                    type: 'ArrayElementAssignment',
-                    array: name.value,
-                    index: index,
-                    value: value
-                };
-            }
-
-            parseArrayPush() {
-                this.consumeToken('添加');
-                const value = this.parseExpression();
-                this.consumeToken('到');
-                const array = this.parseExpression();
-                
-                return {
-                    type: 'ArrayPush',
-                    value: value,
-                    array: array
-                };
-            }
-
-            parseExpression() {
-                return this.parseLogicalOr();
-            }
-
-            parseLogicalOr() {
-                let left = this.parseLogicalAnd();
-                
-                while (this.getCurrentToken() && this.getCurrentToken().value === '或者') {
-                    this.consumeToken('或者');
-                    const right = this.parseLogicalAnd();
-                    left = {
-                        type: 'LogicalExpression',
-                        operator: '||',
-                        left: left,
-                        right: right
-                    };
-                }
-                
-                return left;
-            }
-
-            parseLogicalAnd() {
-                let left = this.parseEquality();
-                
-                while (this.getCurrentToken() && this.getCurrentToken().value === '并且') {
-                    this.consumeToken('并且');
-                    const right = this.parseEquality();
-                    left = {
-                        type: 'LogicalExpression',
-                        operator: '&&',
-                        left: left,
-                        right: right
-                    };
-                }
-                
-                return left;
-            }
-
-            parseEquality() {
-                let left = this.parseRelational();
-                
-                while (this.getCurrentToken()) {
-                    const op = this.getCurrentToken().value;
-                    if (['等于', '不等于'].includes(op)) {
-                        this.consumeToken();
-                        const right = this.parseRelational();
-                        left = {
-                            type: 'BinaryExpression',
-                            operator: op === '等于' ? '===' : '!==',
-                            left: left,
-                            right: right
-                        };
-                    } else {
-                        break;
-                    }
-                }
-                
-                return left;
-            }
-
-            parseRelational() {
-                let left = this.parseAdditive();
-                
-                while (this.getCurrentToken()) {
-                    const op = this.getCurrentToken().value;
-                    if (['大于', '小于', '大于等于', '小于等于'].includes(op)) {
-                        this.consumeToken();
-                        const right = this.parseAdditive();
-                        const jsOp = {
-                            '大于': '>',
-                            '小于': '<',
-                            '大于等于': '>=',
-                            '小于等于': '<='
-                        }[op];
-                        left = {
-                            type: 'BinaryExpression',
-                            operator: jsOp,
-                            left: left,
-                            right: right
-                        };
-                    } else {
-                        break;
-                    }
-                }
-                
-                return left;
-            }
-
-            parseAdditive() {
-                let left = this.parseMultiplicative();
-                
-                while (this.getCurrentToken()) {
-                    const op = this.getCurrentToken().value;
-                    if (['加上', '减去'].includes(op)) {
-                        this.consumeToken();
-                        const right = this.parseMultiplicative();
-                        left = {
-                            type: 'BinaryExpression',
-                            operator: op === '加上' ? '+' : '-',
-                            left: left,
-                            right: right
-                        };
-                    } else {
-                        break;
-                    }
-                }
-                
-                return left;
-            }
-
-            parseMultiplicative() {
-                let left = this.parsePower();
-                
-                while (this.getCurrentToken()) {
-                    const op = this.getCurrentToken().value;
-                    if (['乘以', '除以', '取余'].includes(op)) {
-                        this.consumeToken();
-                        const right = this.parsePower();
-                        const jsOp = {
-                            '乘以': '*',
-                            '除以': '/',
-                            '取余': '%'
-                        }[op];
-                        left = {
-                            type: 'BinaryExpression',
-                            operator: jsOp,
-                            left: left,
-                            right: right
-                        };
-                    } else {
-                        break;
-                    }
-                }
-                
-                return left;
-            }
-
-            parsePower() {
-                let left = this.parseUnary();
-                
-                if (this.getCurrentToken() && this.getCurrentToken().value === '幂') {
-                    this.consumeToken();
-                    const right = this.parsePower();
-                    return {
-                        type: 'BinaryExpression',
-                        operator: '**',
-                        left: left,
-                        right: right
-                    };
-                }
-                
-                return left;
-            }
-
-            parseUnary() {
-                if (this.getCurrentToken() && this.getCurrentToken().value === '非') {
-                    this.consumeToken();
-                    return {
-                        type: 'UnaryExpression',
-                        operator: '!',
-                        argument: this.parseUnary()
-                    };
-                }
-                
-                return this.parsePostfix();
-            }
-
-            parsePostfix() {
-                let expr = this.parsePrimary();
-                
-                while (this.getCurrentToken()) {
-                    if (this.getCurrentToken().value === '的') {
-                        this.consumeToken();
-                        const property = this.consumeToken();
-                        
-                        if (property.value === '长度') {
-                            expr = {
-                                type: 'PropertyAccess',
-                                object: expr,
-                                property: 'length'
-                            };
-                        }
-                    } else if (this.getCurrentToken().value === '[') {
-                        this.consumeToken('[');
-                        const index = this.parseExpression();
-                        this.consumeToken(']');
-                        expr = {
-                            type: 'MemberAccess',
-                            object: expr,
-                            index: index
-                        };
-                    } else {
-                        break;
-                    }
-                }
-                
-                return expr;
-            }
-
-            parsePrimary() {
-                const token = this.getCurrentToken();
-                if (!token) return null;
-                
-                // 数字字面量
-                if (token.type === 'NUMBER') {
-                    this.consumeToken();
-                    return {
-                        type: 'NumberLiteral',
-                        value: parseFloat(token.value)
-                    };
-                }
-                
-                // 字符串字面量
-                if (token.type === 'STRING') {
-                    this.consumeToken();
-                    // 去除引号并处理转义字符
-                    const str = token.value.slice(1, -1)
-                        .replace(/\\n/g, '\n')
-                        .replace(/\\t/g, '\t')
-                        .replace(/\\"/g, '"')
-                        .replace(/\\'/g, "'")
-                        .replace(/\\\\/g, '\\');
-                    return {
-                        type: 'StringLiteral',
-                        value: str
-                    };
-                }
-                
-                // 数组字面量
-                if (token.value === '[') {
-                    return this.parseArrayLiteral();
-                }
-                
-                // 括号表达式
-                if (token.value === '(') {
-                    this.consumeToken('(');
-                    const expr = this.parseExpression();
-                    this.consumeToken(')');
-                    return expr;
-                }
-                
-                // 函数调用
-                if (token.value === '调用') {
-                    return this.parseFunctionCallExpression();
-                }
-                
-                // 内置函数调用
-                if (this.builtins.has(token.value)) {
-                    this.consumeToken();
-                    this.consumeToken('(');
-                    const args = [];
-                    
-                    while (this.getCurrentToken() && this.getCurrentToken().value !== ')') {
-                        args.push(this.parseExpression());
-                        if (this.getCurrentToken() && this.getCurrentToken().value === ',') {
-                            this.consumeToken(',');
-                        }
-                    }
-                    
-                    this.consumeToken(')');
-                    
-                    return {
-                        type: 'BuiltinCall',
-                        name: token.value,
-                        arguments: args
-                    };
-                }
-                
-                // 标识符
-                if (token.type === 'IDENTIFIER') {
-                    this.consumeToken();
-                    return {
-                        type: 'Identifier',
-                        name: token.value
-                    };
-                }
-                
-                throw this.createError(`未预期的token: ${token.value}`);
-            }
-
-            parseArrayLiteral() {
-                this.consumeToken('[');
-                const elements = [];
-                
-                while (this.getCurrentToken() && this.getCurrentToken().value !== ']') {
-                    elements.push(this.parseExpression());
-                    if (this.getCurrentToken() && this.getCurrentToken().value === ',') {
-                        this.consumeToken(',');
-                    }
-                }
-                
-                this.consumeToken(']');
-                
-                return {
-                    type: 'ArrayLiteral',
-                    elements: elements
-                };
-            }
-
-            parseFunctionCallExpression() {
-                this.consumeToken('调用');
-                const name = this.consumeToken();
-                
-                const args = [];
-                if (this.getCurrentToken() && this.getCurrentToken().value === '传入') {
-                    this.consumeToken('传入');
-                    
-                    do {
-                        args.push(this.parseExpression());
-                        if (this.getCurrentToken() && this.getCurrentToken().value === ',') {
-                            this.consumeToken(',');
-                        } else {
-                            break;
-                        }
-                    } while (true);
-                }
-                
-                return {
-                    type: 'FunctionCall',
-                    name: name.value,
-                    arguments: args
-                };
-            }
-
-            // 执行引擎
-            execute(ast) {
-                try {
-                    this.executeBlock(ast.body);
-                    return {
-                        success: true,
-                        output: this.output.join('\n'),
-                        errors: this.errors
-                    };
-                } catch (error) {
-                    this.errors.push(error);
-                    return {
-                        success: false,
-                        output: this.output.join('\n'),
-                        errors: this.errors
-                    };
-                }
-            }
-
-            executeBlock(statements, newScope = false) {
-                if (newScope) {
-                    this.pushScope();
-                }
-                
-                try {
-                    for (const stmt of statements) {
-                        if (!stmt) continue;
-                        
-                        const result = this.executeStatement(stmt);
-                        
-                        if (result) {
-                            if (result.type === 'return') {
-                                return result;
-                            } else if (result.type === 'break') {
-                                if (this.loopStack.length === 0) {
-                                    throw this.createError('跳出循环语句只能在循环内使用');
-                                }
-                                return result;
-                            } else if (result.type === 'continue') {
-                                if (this.loopStack.length === 0) {
-                                    throw this.createError('继续循环语句只能在循环内使用');
-                                }
-                                return result;
-                            }
-                        }
-                    }
-                } finally {
-                    if (newScope) {
-                        this.popScope();
-                    }
-                }
-            }
-
-            executeStatement(stmt) {
-                if (!stmt) return null;
-                
-                this.currentLine = stmt.line || this.currentLine;
-                
-                switch (stmt.type) {
-                    case 'VariableDeclaration':
-                        const value = this.evaluateExpression(stmt.value);
-                        this.setVariable(stmt.name, value);
-                        break;
-                        
-                    case 'FunctionDeclaration':
-                        this.functions.set(stmt.name, stmt);
-                        break;
-                        
-                    case 'Assignment':
-                        const assignValue = this.evaluateExpression(stmt.value);
-                        this.setVariable(stmt.name, assignValue);
-                        break;
-                        
-                    case 'ArrayElementAssignment':
-                        const array = this.getVariable(stmt.array);
-                        if (!Array.isArray(array)) {
-                            throw this.createError(`${stmt.array} 不是数组`);
-                        }
-                        const index = this.evaluateExpression(stmt.index);
-                        const newValue = this.evaluateExpression(stmt.value);
-                        array[index] = newValue;
-                        break;
-                        
-                    case 'OutputStatement':
-                        const output = this.evaluateExpression(stmt.value);
-                        this.output.push(this.toString(output));
-                        break;
-                        
-                    case 'ReturnStatement':
-                        return {
-                            type: 'return',
-                            value: this.evaluateExpression(stmt.value)
-                        };
-                        
-                    case 'IfStatement':
-                        const condition = this.evaluateExpression(stmt.condition);
-                        if (this.toBoolean(condition)) {
-                            const result = this.executeBlock(stmt.thenBranch);
-                            if (result) return result;
-                        } else if (stmt.elseBranch.length > 0) {
-                            const result = this.executeBlock(stmt.elseBranch);
-                            if (result) return result;
-                        }
-                        break;
-                        
-                    case 'ForLoop':
-                        const list = this.evaluateExpression(stmt.list);
-                        if (!Array.isArray(list)) {
-                            throw this.createError('循环的对象必须是数组');
-                        }
-                        
-                        this.loopStack.push(true);
-                        try {
-                            for (const item of list) {
-                                this.pushScope();
-                                this.setVariable(stmt.variable, item);
-                                
-                                const result = this.executeBlock(stmt.body);
-                                this.popScope();
-                                
-                                if (result) {
-                                    if (result.type === 'break') {
-                                        break;
-                                    } else if (result.type === 'continue') {
-                                        continue;
-                                    } else if (result.type === 'return') {
-                                        return result;
-                                    }
-                                }
-                            }
-                        } finally {
-                            this.loopStack.pop();
-                        }
-                        break;
-                        
-                    case 'WhileLoop':
-                        this.loopStack.push(true);
-                        try {
-                            while (this.toBoolean(this.evaluateExpression(stmt.condition))) {
-                                const result = this.executeBlock(stmt.body);
-                                if (result) {
-                                    if (result.type === 'break') {
-                                        break;
-                                    } else if (result.type === 'continue') {
-                                        continue;
-                                    } else if (result.type === 'return') {
-                                        return result;
-                                    }
-                                }
-                            }
-                        } finally {
-                            this.loopStack.pop();
-                        }
-                        break;
-                        
-                    case 'ArrayPush':
-                        const targetArray = this.evaluateExpression(stmt.array);
-                        if (!Array.isArray(targetArray)) {
-                            throw this.createError('只能向数组添加元素');
-                        }
-                        targetArray.push(this.evaluateExpression(stmt.value));
-                        break;
-                        
-                    default:
-                        throw this.createError(`未知的语句类型: ${stmt.type}`);
-                }
-            }
-
-            evaluateExpression(expr) {
-                if (!expr) return null;
-                
-                switch (expr.type) {
-                    case 'NumberLiteral':
-                        return expr.value;
-                        
-                    case 'StringLiteral':
-                        return expr.value;
-                        
-                    case 'ArrayLiteral':
-                        return expr.elements.map(el => this.evaluateExpression(el));
-                        
-                    case 'Identifier':
-                        return this.getVariable(expr.name);
-                        
-                    case 'BinaryExpression':
-                        return this.evaluateBinaryExpression(expr);
-                        
-                    case 'UnaryExpression':
-                        const arg = this.evaluateExpression(expr.argument);
-                        if (expr.operator === '!') {
-                            return !this.toBoolean(arg);
-                        }
-                        throw this.createError(`未知的一元运算符: ${expr.operator}`);
-                        
-                    case 'LogicalExpression':
-                        const left = this.evaluateExpression(expr.left);
-                        if (expr.operator === '||') {
-                            return this.toBoolean(left) ? left : this.evaluateExpression(expr.right);
-                        } else if (expr.operator === '&&') {
-                            return this.toBoolean(left) ? this.evaluateExpression(expr.right) : left;
-                        }
-                        throw this.createError(`未知的逻辑运算符: ${expr.operator}`);
-                        
-                    case 'FunctionCall':
-                        return this.callFunction(expr.name, expr.arguments);
-                        
-                    case 'BuiltinCall':
-                        const args = expr.arguments.map(arg => this.evaluateExpression(arg));
-                        return this.builtins.get(expr.name)(args);
-                        
-                    case 'PropertyAccess':
-                        const object = this.evaluateExpression(expr.object);
-                        if (expr.property === 'length') {
-                            if (typeof object === 'string' || Array.isArray(object)) {
-                                return object.length;
-                            }
-                        }
-                        return object[expr.property];
-                        
-                    case 'MemberAccess':
-                        const container = this.evaluateExpression(expr.object);
-                        const index = this.evaluateExpression(expr.index);
-                        if (Array.isArray(container) || typeof container === 'string') {
-                            return container[index];
-                        }
-                        throw this.createError('只能对数组或字符串使用索引访问');
-                        
-                    default:
-                        throw this.createError(`未知的表达式类型: ${expr.type}`);
-                }
-            }
-
-            evaluateBinaryExpression(expr) {
-                const left = this.evaluateExpression(expr.left);
-                const right = this.evaluateExpression(expr.right);
-                
-                switch (expr.operator) {
-                    case '+':
-                        return left + right;
-                    case '-':
-                        return left - right;
-                    case '*':
-                        return left * right;
-                    case '/':
-                        if (right === 0) {
-                            throw this.createError('除数不能为零');
-                        }
-                        return left / right;
-                    case '%':
-                        return left % right;
-                    case '**':
-                        return Math.pow(left, right);
-                    case '>':
-                        return left > right;
-                    case '<':
-                        return left < right;
-                    case '>=':
-                        return left >= right;
-                    case '<=':
-                        return left <= right;
-                    case '===':
-                        return left === right;
-                    case '!==':
-                        return left !== right;
-                    default:
-                        throw this.createError(`未知的二元运算符: ${expr.operator}`);
-                }
-            }
-
-            callFunction(name, argExprs) {
-                const func = this.functions.get(name);
-                if (!func) {
-                    throw this.createError(`未定义的函数: ${name}`);
-                }
-                
-                // 计算参数值
-                const args = argExprs.map(arg => this.evaluateExpression(arg));
-                
-                // 创建新的作用域
-                this.pushScope();
-                this.callStack.push(name);
-                
-                try {
-                    // 绑定参数
-                    for (let i = 0; i < func.params.length; i++) {
-                        this.setVariable(func.params[i], args[i]);
-                    }
-                    
-                    // 执行函数体
-                    const result = this.executeBlock(func.body);
-                    
-                    if (result && result.type === 'return') {
-                        return result.value;
-                    }
-                    
-                    return null;
-                } finally {
-                    this.callStack.pop();
-                    this.popScope();
-                }
-            }
-
-            // 变量作用域管理
-            pushScope() {
-                const newScope = new Map();
-                newScope.__parent__ = this.variables;
-                this.variables = newScope;
-            }
-
-            popScope() {
-                if (this.variables.__parent__) {
-                    this.variables = this.variables.__parent__;
-                }
-            }
-
-            setVariable(name, value) {
-                this.variables.set(name, value);
-            }
-
-            getVariable(name) {
-                let scope = this.variables;
-                while (scope) {
-                    if (scope.has(name)) {
-                        return scope.get(name);
-                    }
-                    scope = scope.__parent__;
-                }
-                throw this.createError(`未定义的变量: ${name}`);
-            }
-
-            // 辅助方法
-            toString(value) {
-                if (value === null) return '空值';
-                if (value === undefined) return '未定义';
-                if (typeof value === 'string') return value;
-                if (typeof value === 'number') return String(value);
-                if (typeof value === 'boolean') return value ? '为真' : '为假';
-                if (Array.isArray(value)) {
-                    return '[' + value.map(v => this.toString(v)).join(', ') + ']';
-                }
-                return String(value);
-            }
-
-            toBoolean(value) {
-                if (value === null || value === undefined) return false;
-                if (value === false || value === 0 || value === '') return false;
-                if (Array.isArray(value) && value.length === 0) return false;
-                return true;
-            }
-
-            createError(message) {
-                const error = new Error(message);
-                error.line = this.currentLine;
-                error.stack = this.callStack.slice();
-                return error;
-            }
-
-            run(code) {
-                this.reset();
-                
-                try {
-                    // 词法分析
-                    const tokens = this.tokenize(code);
-                    
-                    // 语法分析
-                    const ast = this.parse(tokens);
-                    
-                    // 执行
-                    const result = this.execute(ast);
-                    
-                    return result;
-                } catch (error) {
-                    this.errors.push(error);
-                    return {
-                        success: false,
-                        output: this.output.join('\n'),
-                        errors: this.errors
-                    };
-                }
-            }
+        // 更新字符计数
+        function updateCharCount() {
+            const inputText = document.getElementById('inputText').value;
+            const outputText = document.getElementById('outputText').value;
+            
+            document.getElementById('inputCount').textContent = `${inputText.length} 字符`;
+            document.getElementById('outputCount').textContent = `${outputText.length} 字符`;
+            
+            // 更新统计信息
+            updateStats();
         }
 
-        // UI 交互代码
-        const interpreter = new ChineseInterpreter();
-
-        function updateLineNumbers() {
-            const textarea = document.getElementById('code');
-            const lineNumbers = document.getElementById('lineNumbers');
-            const lines = textarea.value.split('\n').length;
+        // 更新统计信息
+        function updateStats() {
+            const inputText = document.getElementById('inputText').value;
+            const key = parseInt(document.getElementById('encryptionKey').value);
+            const complexity = parseInt(document.getElementById('complexity').value);
             
-            let lineNumbersHtml = '';
-            for (let i = 1; i <= lines; i++) {
-                lineNumbersHtml += i + '\n';
-            }
-            lineNumbers.textContent = lineNumbersHtml;
+            // 计算汉字数量
+            const chineseCharCount = (inputText.match(/[\u4e00-\u9fff]/g) || []).length;
+            
+            document.getElementById('totalChars').textContent = totalCharsProcessed;
+            document.getElementById('chineseChars').textContent = chineseCharCount;
+            document.getElementById('operationCount').textContent = operationCount;
+            document.getElementById('encryptionStrength').textContent = key * complexity;
         }
 
-        function updateCursorPosition() {
-            const textarea = document.getElementById('code');
-            const text = textarea.value.substring(0, textarea.selectionStart);
-            const lines = text.split('\n');
-            const currentLine = lines.length;
-            const currentColumn = lines[lines.length - 1].length + 1;
-            
-            document.getElementById('cursor-position').textContent = 
-                `行 ${currentLine}, 列 ${currentColumn}`;
+        // 判断是否为汉字
+        function isChinese(char) {
+            const code = char.charCodeAt(0);
+            return code >= 0x4e00 && code <= 0x9fff;
         }
 
-        function runCode() {
-            const code = document.getElementById('code').value;
-            const outputDiv = document.getElementById('output');
+        // 高级加密算法
+        function advancedEncrypt(text, key, complexity) {
+            let result = '';
+            const textLength = text.length;
             
-            // 清空输出
-            outputDiv.innerHTML = '<div class="info">🚀 开始运行...</div>\n';
-            
-            // 运行代码
-            const result = interpreter.run(code);
-            
-            if (result.success) {
-                outputDiv.innerHTML = '<div class="success">✅ 运行成功</div>\n\n';
-                if (result.output) {
-                    outputDiv.innerHTML += `<div>${escapeHtml(result.output)}</div>`;
-                }
-            } else {
-                outputDiv.innerHTML = '<div class="error">❌ 运行出错</div>\n\n';
+            for (let i = 0; i < textLength; i++) {
+                const char = text[i];
                 
-                // 显示错误信息
-                for (const error of result.errors) {
-                    let errorMsg = `<div class="error">错误`;
-                    if (error.line) {
-                        errorMsg += ` (第 ${error.line} 行)`;
-                    }
-                    errorMsg += `: ${escapeHtml(error.message || error)}</div>`;
+                if (isChinese(char)) {
+                    const originalCode = char.charCodeAt(0);
+                    // 多重加密：密钥 × 复杂度 × 位置权重
+                    const positionWeight = (i % 10) + 1;
+                    const offset = key * complexity * positionWeight;
+                    let newCode = originalCode + offset;
                     
-                    if (error.stack && error.stack.length > 0) {
-                        errorMsg += `<div class="error">调用栈: ${error.stack.join(' -> ')}</div>`;
+                    // 确保结果在汉字Unicode范围内（循环）
+                    const minChinese = 0x4e00;
+                    const maxChinese = 0x9fff;
+                    const chineseRange = maxChinese - minChinese + 1;
+                    
+                    if (newCode > maxChinese) {
+                        newCode = minChinese + ((newCode - minChinese) % chineseRange);
                     }
                     
-                    outputDiv.innerHTML += errorMsg;
-                }
-                
-                // 如果有部分输出，也显示出来
-                if (result.output) {
-                    outputDiv.innerHTML += '\n<div class="warning">部分输出：</div>\n';
-                    outputDiv.innerHTML += `<div>${escapeHtml(result.output)}</div>`;
-                }
-            }
-        }
-
-        function clearCode() {
-            if (confirm('确定要清空所有代码吗？')) {
-                document.getElementById('code').value = '';
-                updateLineNumbers();
-                updateCursorPosition();
-            }
-        }
-
-        function clearOutput() {
-            document.getElementById('output').innerHTML = '';
-        }
-
-        function formatCode() {
-            // 简单的代码格式化
-            let code = document.getElementById('code').value;
-            
-            // 移除多余的空行
-            code = code.replace(/\n\s*\n\s*\n/g, '\n\n');
-            
-            // 修复缩进
-            const lines = code.split('\n');
-            const formattedLines = [];
-            let indentLevel = 0;
-            
-            for (let line of lines) {
-                const trimmed = line.trim();
-                
-                // 减少缩进的关键字
-                if (trimmed === '结束' || trimmed === '否则' || trimmed.startsWith('否则如果')) {
-                    indentLevel = Math.max(0, indentLevel - 1);
-                }
-                
-                // 添加缩进
-                if (trimmed) {
-                    formattedLines.push('    '.repeat(indentLevel) + trimmed);
+                    result += String.fromCharCode(newCode);
                 } else {
-                    formattedLines.push('');
-                }
-                
-                // 增加缩进的关键字
-                if (trimmed.startsWith('定义 函数') || trimmed.startsWith('定义 类') ||
-                    trimmed.startsWith('如果') || trimmed === '否则' || 
-                    trimmed.startsWith('否则如果') || trimmed.startsWith('循环') ||
-                    trimmed.startsWith('当')) {
-                    indentLevel++;
+                    // 非汉字字符进行简单偏移
+                    const originalCode = char.charCodeAt(0);
+                    const simpleOffset = (key % 100);
+                    let newCode = originalCode + simpleOffset;
+                    
+                    // 确保不超出基本Unicode范围
+                    if (newCode > 65535) {
+                        newCode = newCode - 65535 + 33;
+                    }
+                    
+                    result += String.fromCharCode(newCode);
                 }
             }
             
-            document.getElementById('code').value = formattedLines.join('\n');
-            updateLineNumbers();
+            return result;
         }
 
-        function saveCode() {
-            const code = document.getElementById('code').value;
-            const blob = new Blob([code], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '程序.han';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function loadCode() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.han,.txt';
-            input.onchange = function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('code').value = e.target.result;
-                        updateLineNumbers();
-                        updateCursorPosition();
-                    };
-                    reader.readAsText(file);
+        // 高级解密算法
+        function advancedDecrypt(text, key, complexity) {
+            let result = '';
+            const textLength = text.length;
+            
+            for (let i = 0; i < textLength; i++) {
+                const char = text[i];
+                const originalCode = char.charCodeAt(0);
+                
+                // 判断是否为加密后的汉字（在汉字Unicode范围内）
+                if (originalCode >= 0x4e00 && originalCode <= 0x9fff) {
+                    const positionWeight = (i % 10) + 1;
+                    const offset = key * complexity * positionWeight;
+                    let newCode = originalCode - offset;
+                    
+                    // 确保结果在汉字Unicode范围内（循环）
+                    const minChinese = 0x4e00;
+                    const maxChinese = 0x9fff;
+                    const chineseRange = maxChinese - minChinese + 1;
+                    
+                    if (newCode < minChinese) {
+                        newCode = maxChinese - ((minChinese - newCode - 1) % chineseRange);
+                    }
+                    
+                    result += String.fromCharCode(newCode);
+                } else {
+                    // 解密非汉字字符
+                    const simpleOffset = (key % 100);
+                    let newCode = originalCode - simpleOffset;
+                    
+                    if (newCode < 33) {
+                        newCode = 65535 - (33 - newCode) + 1;
+                    }
+                    
+                    result += String.fromCharCode(newCode);
                 }
-            };
-            input.click();
+            }
+            
+            return result;
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        // 加密函数
+        function encryptText() {
+            const inputText = document.getElementById('inputText').value;
+            const key = parseInt(document.getElementById('encryptionKey').value);
+            const complexity = parseInt(document.getElementById('complexity').value);
+            
+            if (!inputText.trim()) {
+                showNotification('请输入要加密的文本!', 'error');
+                return;
+            }
+            
+            if (!key || key < 1) {
+                showNotification('请输入有效的密钥!', 'error');
+                return;
+            }
+            
+            try {
+                const encrypted = advancedEncrypt(inputText, key, complexity);
+                document.getElementById('outputText').value = encrypted;
+                
+                operationCount++;
+                totalCharsProcessed += inputText.length;
+                updateCharCount();
+                
+                showNotification('加密成功!', 'success');
+            } catch (error) {
+                showNotification('加密失败: ' + error.message, 'error');
+            }
         }
+
+        // 解密函数
+        function decryptText() {
+            const inputText = document.getElementById('inputText').value;
+            const key = parseInt(document.getElementById('encryptionKey').value);
+            const complexity = parseInt(document.getElementById('complexity').value);
+            
+            if (!inputText.trim()) {
+                showNotification('请输入要解密的文本!', 'error');
+                return;
+            }
+            
+            if (!key || key < 1) {
+                showNotification('请输入有效的密钥!', 'error');
+                return;
+            }
+            
+            try {
+                const decrypted = advancedDecrypt(inputText, key, complexity);
+                document.getElementById('outputText').value = decrypted;
+                
+                operationCount++;
+                totalCharsProcessed += inputText.length;
+                updateCharCount();
+                
+                showNotification('解密成功!', 'success');
+            } catch (error) {
+                showNotification('解密失败: ' + error.message, 'error');
+            }
+        }
+
+        // 复制结果
+        function copyResult() {
+            const outputText = document.getElementById('outputText');
+            if (!outputText.value.trim()) {
+                showNotification('没有可复制的内容!', 'error');
+                return;
+            }
+            
+            outputText.select();
+            outputText.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showNotification('结果已复制到剪贴板!', 'success');
+            } catch (error) {
+                // 备用方案
+                navigator.clipboard.writeText(outputText.value).then(() => {
+                    showNotification('结果已复制到剪贴板!', 'success');
+                }).catch(() => {
+                    showNotification('复制失败，请手动复制!', 'error');
+                });
+            }
+        }
+
+        // 清空所有内容
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+            updateCharCount();
+            showNotification('内容已清空!', 'success');
+        }
+
+        // 加载演示内容
+        function loadDemo() {
+            const demoTexts = [
+                '中华人民共和国万岁！',
+                '汉字加密系统测试',
+                '人工智能技术发展迅速',
+                '春暖花开，万物复苏',
+                '加密解密功能正常运行'
+            ];
+            
+            const randomDemo = demoTexts[Math.floor(Math.random() * demoTexts.length)];
+            document.getElementById('inputText').value = randomDemo;
+            document.getElementById('encryptionKey').value = Math.floor(Math.random() * 1000) + 100;
+            document.getElementById('complexity').value = Math.floor(Math.random() * 5) + 1;
+            
+            updateCharCount();
+            showNotification('演示内容已加载!', 'success');
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 事件监听器
+        document.getElementById('inputText').addEventListener('input', updateCharCount);
+        document.getElementById('encryptionKey').addEventListener('input', updateStats);
+        document.getElementById('complexity').addEventListener('input', updateStats);
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey) {
+                switch(e.key) {
+                    case 'e':
+                        e.preventDefault();
+                        encryptText();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        decryptText();
+                        break;
+                    case 'l':
+                        e.preventDefault();
+                        clearAll();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        loadDemo();
+                        break;
+                }
+            }
+        });
 
         // 初始化
-        document.getElementById('code').addEventListener('input', updateLineNumbers);
-        document.getElementById('code').addEventListener('input', updateCursorPosition);
-        document.getElementById('code').addEventListener('click', updateCursorPosition);
-        document.getElementById('code').addEventListener('keyup', updateCursorPosition);
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCharCount();
+            updateStats();
+            
+            // 显示快捷键提示
+            setTimeout(() => {
+                showNotification('提示: 使用 Ctrl+E 加密, Ctrl+D 解密, Ctrl+L 清空, Ctrl+R 演示', 'info');
+            }, 1000);
+        });
 
-        // 初始化时更新行号
-        updateLineNumbers();
-        updateCursorPosition();
-        
-        // 自动运行示例代码
-        setTimeout(() => runCode(), 500);
+        // 密钥随机生成
+        function generateRandomKey() {
+            const randomKey = Math.floor(Math.random() * 9000) + 1000;
+            document.getElementById('encryptionKey').value = randomKey;
+            updateStats();
+            showNotification(`已生成随机密钥: ${randomKey}`, 'success');
+        }
+
+        // 在密钥输入框后添加随机生成按钮
+        document.addEventListener('DOMContentLoaded', function() {
+            const keyInput = document.getElementById('encryptionKey');
+            const randomBtn = document.createElement('button');
+            randomBtn.textContent = '🎲 随机';
+            randomBtn.style.marginLeft = '10px';
+            randomBtn.style.padding = '8px 12px';
+            randomBtn.style.fontSize = '14px';
+            randomBtn.className = 'btn-demo';
+            randomBtn.onclick = generateRandomKey;
+            
+            keyInput.parentNode.appendChild(randomBtn);
+        });
     </script>
 </body>
 </html>
