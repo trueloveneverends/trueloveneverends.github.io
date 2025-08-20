@@ -1,707 +1,207 @@
+
+
+
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WWZ-汉字加密系统 - Chinese Character Encryption System</title>
+    <title>WWZ-视频解析器</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white;
-            padding: 30px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
             text-align: center;
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        .container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            padding: 30px;
-        }
-
-        .encryption-panel {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .input-section, .output-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            border: 2px solid #e9ecef;
-        }
-
-        .input-section h3, .output-section h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .textarea-container {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        textarea {
+        input[type="text"], select {
             width: 100%;
-            height: 150px;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-            transition: border-color 0.3s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
-        }
-
-        .char-count {
-            position: absolute;
-            bottom: 5px;
-            right: 10px;
-            color: #666;
-            font-size: 12px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        .controls {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border: 2px solid #e9ecef;
-        }
-
-        .control-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        label {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        input[type="number"] {
             padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
             font-size: 16px;
-            width: 120px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
         }
 
         button {
-            padding: 12px 25px;
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: #fff;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 5px;
+            font-size: 18px;
             cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-encrypt {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-
-        .btn-decrypt {
-            background: linear-gradient(135deg, #27ae60, #229954);
-            color: white;
-        }
-
-        .btn-clear {
-            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-            color: white;
-        }
-
-        .btn-copy {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-        }
-
-        .btn-demo {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background-color: #45a049;
         }
 
-        button:active {
-            transform: translateY(0);
-        }
-
-        .algorithm-explanation {
-            background: #fff;
-            padding: 25px;
-            border-radius: 15px;
-            border-left: 5px solid #667eea;
-            margin-bottom: 30px;
-        }
-
-        .algorithm-explanation h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-
-        .algorithm-explanation p {
-            line-height: 1.6;
-            color: #34495e;
-            margin-bottom: 10px;
-        }
-
-        .algorithm-explanation code {
-            background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            color: #e74c3c;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .stat-card h4 {
-            font-size: 2em;
-            margin-bottom: 5px;
-        }
-
-        .stat-card p {
-            opacity: 0.9;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            background: #27ae60;
-            color: white;
-            border-radius: 10px;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-            z-index: 1000;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        @media (max-width: 768px) {
-            .encryption-panel {
-                grid-template-columns: 1fr;
-            }
-            
-            .control-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .button-group {
-                justify-content: center;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-        }
-
-        .example-section {
-            background: #e8f5e8;
-            padding: 20px;
-            border-radius: 10px;
+        .video-container {
             margin-top: 20px;
         }
 
-        .example-section h4 {
-            color: #27ae60;
-            margin-bottom: 10px;
+        .video-container iframe {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            border: none;
         }
 
-        .example-item {
-            background: white;
-            padding: 10px;
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .modal-content p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
             border-radius: 5px;
-            margin-bottom: 8px;
-            font-family: monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-content button:hover {
+            background-color: #45a049;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay p {
+            font-size: 20px;
+            color: #fff;
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .video-container iframe {
+                height: 200px;
+            }
+
+            .modal-content p {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔐 汉字加密系统</h1>
-            <p>基于Unicode偏移的高级汉字加密解密工具</p>
-        </div>
-
-        <div class="main-content">
-            <!-- 加密解密面板 -->
-            <div class="encryption-panel">
-                <div class="input-section">
-                    <h3>📝 输入文本</h3>
-                    <div class="textarea-container">
-                        <textarea id="inputText" placeholder="请输入要加密或解密的汉字文本...&#10;支持中文字符、标点符号等"></textarea>
-                        <div class="char-count" id="inputCount">0 字符</div>
-                    </div>
-                </div>
-
-                <div class="output-section">
-                    <h3>📄 输出结果</h3>
-                    <div class="textarea-container">
-                        <textarea id="outputText" placeholder="加密或解密的结果将在这里显示..." readonly></textarea>
-                        <div class="char-count" id="outputCount">0 字符</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 控制面板 -->
-            <div class="controls">
-                <div class="control-row">
-                    <div class="control-group">
-                        <label for="encryptionKey">🔑 加密密钥:</label>
-                        <input type="number" id="encryptionKey" value="888" min="1" max="10000">
-                    </div>
-                    <div class="control-group">
-                        <label for="complexity">🎛️ 复杂度:</label>
-                        <input type="number" id="complexity" value="3" min="1" max="10" title="增加算法复杂度">
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn-encrypt" onclick="encryptText()">🔒 加密</button>
-                    <button class="btn-decrypt" onclick="decryptText()">🔓 解密</button>
-                    <button class="btn-copy" onclick="copyResult()">📋 复制结果</button>
-                    <button class="btn-clear" onclick="clearAll()">🗑️ 清空</button>
-                    <button class="btn-demo" onclick="loadDemo()">🎯 演示</button>
-                </div>
-            </div>
-
-            <!-- 算法说明 -->
-            <div class="algorithm-explanation">
-                <h3>🧮 加密算法原理</h3>
-                <p><strong>核心算法：</strong>多层Unicode偏移加密</p>
-                <p>1. <strong>字符转换：</strong>将汉字转换为Unicode码点</p>
-                <p>2. <strong>多重加密：</strong>对每个字符的Unicode值进行 <code>密钥 × 复杂度 × 字符位置</code> 的偏移</p>
-                <p>3. <strong>位置权重：</strong>根据字符在文本中的位置赋予不同的加密强度</p>
-                <p>4. <strong>循环保护：</strong>确保加密后的字符仍在有效的Unicode汉字范围内</p>
-                <p>5. <strong>可逆性保证：</strong>解密时执行相反的数学运算，确保100%还原</p>
-
-                <div class="example-section">
-                    <h4>🔍 加密示例</h4>
-                    <div class="example-item">原文：中 (Unicode: 20013)</div>
-                    <div class="example-item">密钥：888，复杂度：3，位置：0</div>
-                    <div class="example-item">计算：20013 + (888 × 3 × 1) = 22677</div>
-                    <div class="example-item">结果：塵 (Unicode: 22677)</div>
-                </div>
-            </div>
-
-            <!-- 统计信息 -->
-            <div class="stats">
-                <div class="stat-card">
-                    <h4 id="totalChars">0</h4>
-                    <p>处理字符数</p>
-                </div>
-                <div class="stat-card">
-                    <h4 id="chineseChars">0</h4>
-                    <p>汉字字符数</p>
-                </div>
-                <div class="stat-card">
-                    <h4 id="operationCount">0</h4>
-                    <p>操作次数</p>
-                </div>
-                <div class="stat-card">
-                    <h4 id="encryptionStrength">0</h4>
-                    <p>当前加密强度</p>
-                </div>
-            </div>
+        <h1>WWZ-视频解析器</h1>
+        <input type="text" id="videoUrlInput" placeholder="输入视频URL">
+        <select id="parserSelect">
+            <option value="https://www.8090g.cn/jiexi/?url=">-8090g-</option>
+            <option value="https://jx.777jiexi.com/player/?url=">-777-</option>
+            <option value="https://yparse.ik9.cc/index.php?url=">-ik9-</option>
+            <option value="https://jx.jsonplayer.com/player/?url=">-杰森-</option>
+            <option value="https://jx.yangtu.top/?url=">-阳途-</option>
+            <option value="https://bd.jx.cn/?url=">-冰豆-</option>
+            <option value="https://jx.m3u8.tv/jiexi/?url=">-m3u8TV-</option>
+            <option value="https://jx.dj6u.com/?url=">-听乐-</option>
+            <option value="https://jx.xmflv.com/?url=">-虾米-</option>
+            <option value="https://jx.xmflv.cc/?url=">-虾米2-</option>
+            <option value="https://jx.yparse.com/index.php?url=">-云析-</option>
+            <option value="https://player.mrgaocloud.com/player/?url=">-红狐-</option>
+        </select>
+        <button id="parseBtn">解析视频</button>
+        <div class="video-container" id="videoPlayerContainer"></div>
+    </div>
+    <div class="modal" id="warningModal">
+        <div class="modal-content">
+            <p>作者其它站点：</p>
+            <p>https://mihoyo520.github.io/</p>
+            <p>https://silentecho520.github.io/</p>
+            <p>https://meetyouhere.github.io/</p>
+            <button id="closeModalBtn">关闭</button>
         </div>
     </div>
-
-    <!-- 通知提示 -->
-    <div class="notification" id="notification">操作成功!</div>
-
+    <div class="loading-overlay" id="loadingOverlay">
+        <p>视频正在解析嗷~稍等嗷</p>
+    </div>
     <script>
-        // 全局变量
-        let operationCount = 0;
-        let totalCharsProcessed = 0;
-
-        // 更新字符计数
-        function updateCharCount() {
-            const inputText = document.getElementById('inputText').value;
-            const outputText = document.getElementById('outputText').value;
-            
-            document.getElementById('inputCount').textContent = `${inputText.length} 字符`;
-            document.getElementById('outputCount').textContent = `${outputText.length} 字符`;
-            
-            // 更新统计信息
-            updateStats();
-        }
-
-        // 更新统计信息
-        function updateStats() {
-            const inputText = document.getElementById('inputText').value;
-            const key = parseInt(document.getElementById('encryptionKey').value);
-            const complexity = parseInt(document.getElementById('complexity').value);
-            
-            // 计算汉字数量
-            const chineseCharCount = (inputText.match(/[\u4e00-\u9fff]/g) || []).length;
-            
-            document.getElementById('totalChars').textContent = totalCharsProcessed;
-            document.getElementById('chineseChars').textContent = chineseCharCount;
-            document.getElementById('operationCount').textContent = operationCount;
-            document.getElementById('encryptionStrength').textContent = key * complexity;
-        }
-
-        // 判断是否为汉字
-        function isChinese(char) {
-            const code = char.charCodeAt(0);
-            return code >= 0x4e00 && code <= 0x9fff;
-        }
-
-        // 高级加密算法
-        function advancedEncrypt(text, key, complexity) {
-            let result = '';
-            const textLength = text.length;
-            
-            for (let i = 0; i < textLength; i++) {
-                const char = text[i];
-                
-                if (isChinese(char)) {
-                    const originalCode = char.charCodeAt(0);
-                    // 多重加密：密钥 × 复杂度 × 位置权重
-                    const positionWeight = (i % 10) + 1;
-                    const offset = key * complexity * positionWeight;
-                    let newCode = originalCode + offset;
-                    
-                    // 确保结果在汉字Unicode范围内（循环）
-                    const minChinese = 0x4e00;
-                    const maxChinese = 0x9fff;
-                    const chineseRange = maxChinese - minChinese + 1;
-                    
-                    if (newCode > maxChinese) {
-                        newCode = minChinese + ((newCode - minChinese) % chineseRange);
-                    }
-                    
-                    result += String.fromCharCode(newCode);
-                } else {
-                    // 非汉字字符进行简单偏移
-                    const originalCode = char.charCodeAt(0);
-                    const simpleOffset = (key % 100);
-                    let newCode = originalCode + simpleOffset;
-                    
-                    // 确保不超出基本Unicode范围
-                    if (newCode > 65535) {
-                        newCode = newCode - 65535 + 33;
-                    }
-                    
-                    result += String.fromCharCode(newCode);
-                }
-            }
-            
-            return result;
-        }
-
-        // 高级解密算法
-        function advancedDecrypt(text, key, complexity) {
-            let result = '';
-            const textLength = text.length;
-            
-            for (let i = 0; i < textLength; i++) {
-                const char = text[i];
-                const originalCode = char.charCodeAt(0);
-                
-                // 判断是否为加密后的汉字（在汉字Unicode范围内）
-                if (originalCode >= 0x4e00 && originalCode <= 0x9fff) {
-                    const positionWeight = (i % 10) + 1;
-                    const offset = key * complexity * positionWeight;
-                    let newCode = originalCode - offset;
-                    
-                    // 确保结果在汉字Unicode范围内（循环）
-                    const minChinese = 0x4e00;
-                    const maxChinese = 0x9fff;
-                    const chineseRange = maxChinese - minChinese + 1;
-                    
-                    if (newCode < minChinese) {
-                        newCode = maxChinese - ((minChinese - newCode - 1) % chineseRange);
-                    }
-                    
-                    result += String.fromCharCode(newCode);
-                } else {
-                    // 解密非汉字字符
-                    const simpleOffset = (key % 100);
-                    let newCode = originalCode - simpleOffset;
-                    
-                    if (newCode < 33) {
-                        newCode = 65535 - (33 - newCode) + 1;
-                    }
-                    
-                    result += String.fromCharCode(newCode);
-                }
-            }
-            
-            return result;
-        }
-
-        // 加密函数
-        function encryptText() {
-            const inputText = document.getElementById('inputText').value;
-            const key = parseInt(document.getElementById('encryptionKey').value);
-            const complexity = parseInt(document.getElementById('complexity').value);
-            
-            if (!inputText.trim()) {
-                showNotification('请输入要加密的文本!', 'error');
-                return;
-            }
-            
-            if (!key || key < 1) {
-                showNotification('请输入有效的密钥!', 'error');
-                return;
-            }
-            
-            try {
-                const encrypted = advancedEncrypt(inputText, key, complexity);
-                document.getElementById('outputText').value = encrypted;
-                
-                operationCount++;
-                totalCharsProcessed += inputText.length;
-                updateCharCount();
-                
-                showNotification('加密成功!', 'success');
-            } catch (error) {
-                showNotification('加密失败: ' + error.message, 'error');
-            }
-        }
-
-        // 解密函数
-        function decryptText() {
-            const inputText = document.getElementById('inputText').value;
-            const key = parseInt(document.getElementById('encryptionKey').value);
-            const complexity = parseInt(document.getElementById('complexity').value);
-            
-            if (!inputText.trim()) {
-                showNotification('请输入要解密的文本!', 'error');
-                return;
-            }
-            
-            if (!key || key < 1) {
-                showNotification('请输入有效的密钥!', 'error');
-                return;
-            }
-            
-            try {
-                const decrypted = advancedDecrypt(inputText, key, complexity);
-                document.getElementById('outputText').value = decrypted;
-                
-                operationCount++;
-                totalCharsProcessed += inputText.length;
-                updateCharCount();
-                
-                showNotification('解密成功!', 'success');
-            } catch (error) {
-                showNotification('解密失败: ' + error.message, 'error');
-            }
-        }
-
-        // 复制结果
-        function copyResult() {
-            const outputText = document.getElementById('outputText');
-            if (!outputText.value.trim()) {
-                showNotification('没有可复制的内容!', 'error');
-                return;
-            }
-            
-            outputText.select();
-            outputText.setSelectionRange(0, 99999);
-            
-            try {
-                document.execCommand('copy');
-                showNotification('结果已复制到剪贴板!', 'success');
-            } catch (error) {
-                // 备用方案
-                navigator.clipboard.writeText(outputText.value).then(() => {
-                    showNotification('结果已复制到剪贴板!', 'success');
-                }).catch(() => {
-                    showNotification('复制失败，请手动复制!', 'error');
-                });
-            }
-        }
-
-        // 清空所有内容
-        function clearAll() {
-            document.getElementById('inputText').value = '';
-            document.getElementById('outputText').value = '';
-            updateCharCount();
-            showNotification('内容已清空!', 'success');
-        }
-
-        // 加载演示内容
-        function loadDemo() {
-            const demoTexts = [
-                '中华人民共和国万岁！',
-                '汉字加密系统测试',
-                '人工智能技术发展迅速',
-                '春暖花开，万物复苏',
-                '加密解密功能正常运行'
-            ];
-            
-            const randomDemo = demoTexts[Math.floor(Math.random() * demoTexts.length)];
-            document.getElementById('inputText').value = randomDemo;
-            document.getElementById('encryptionKey').value = Math.floor(Math.random() * 1000) + 100;
-            document.getElementById('complexity').value = Math.floor(Math.random() * 5) + 1;
-            
-            updateCharCount();
-            showNotification('演示内容已加载!', 'success');
-        }
-
-        // 显示通知
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // 事件监听器
-        document.getElementById('inputText').addEventListener('input', updateCharCount);
-        document.getElementById('encryptionKey').addEventListener('input', updateStats);
-        document.getElementById('complexity').addEventListener('input', updateStats);
-
-        // 键盘快捷键
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey) {
-                switch(e.key) {
-                    case 'e':
-                        e.preventDefault();
-                        encryptText();
-                        break;
-                    case 'd':
-                        e.preventDefault();
-                        decryptText();
-                        break;
-                    case 'l':
-                        e.preventDefault();
-                        clearAll();
-                        break;
-                    case 'r':
-                        e.preventDefault();
-                        loadDemo();
-                        break;
-                }
-            }
+        const warningModal = document.getElementById('warningModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        closeModalBtn.addEventListener('click', function() {
+            warningModal.style.display = 'none';
         });
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCharCount();
-            updateStats();
-            
-            // 显示快捷键提示
-            setTimeout(() => {
-                showNotification('提示: 使用 Ctrl+E 加密, Ctrl+D 解密, Ctrl+L 清空, Ctrl+R 演示', 'info');
-            }, 1000);
-        });
-
-        // 密钥随机生成
-        function generateRandomKey() {
-            const randomKey = Math.floor(Math.random() * 9000) + 1000;
-            document.getElementById('encryptionKey').value = randomKey;
-            updateStats();
-            showNotification(`已生成随机密钥: ${randomKey}`, 'success');
-        }
-
-        // 在密钥输入框后添加随机生成按钮
-        document.addEventListener('DOMContentLoaded', function() {
-            const keyInput = document.getElementById('encryptionKey');
-            const randomBtn = document.createElement('button');
-            randomBtn.textContent = '🎲 随机';
-            randomBtn.style.marginLeft = '10px';
-            randomBtn.style.padding = '8px 12px';
-            randomBtn.style.fontSize = '14px';
-            randomBtn.className = 'btn-demo';
-            randomBtn.onclick = generateRandomKey;
-            
-            keyInput.parentNode.appendChild(randomBtn);
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        document.getElementById('parseBtn').addEventListener('click', function() {
+            const videoUrl = document.getElementById('videoUrlInput').value;
+            const parserUrl = document.getElementById('parserSelect').value;
+            const fullUrl = parserUrl + encodeURIComponent(videoUrl);
+            if (videoUrl) {
+                loadingOverlay.style.display = 'flex';
+                const videoPlayer = document.createElement('iframe');
+                videoPlayer.src = fullUrl;
+                videoPlayer.allowFullscreen = true;
+                const videoPlayerContainer = document.getElementById('videoPlayerContainer');
+                videoPlayerContainer.innerHTML = ''; 
+                videoPlayerContainer.appendChild(videoPlayer);
+                videoPlayer.onload = function() {
+                    loadingOverlay.style.display = 'none';
+                };
+            }
         });
     </script>
 </body>
